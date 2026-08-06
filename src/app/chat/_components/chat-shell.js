@@ -14,9 +14,10 @@ import {
   UserRoundPlus,
   X,
 } from "lucide-react";
+import { useAuth } from "@/providers/auth-provider";
 
 const navigation = [
-  [MessageCircle, "Chats", "/chat", "6"],
+  [MessageCircle, "Chats", "/chat"],
   [UsersRound, "Users", "/chat/users"],
   [UserRoundPlus, "Friends", "/chat/friends"],
 ];
@@ -39,6 +40,7 @@ function Avatar({ initials, color, size = "md" }) {
 
 function Sidebar({ close }) {
   const pathname = usePathname();
+  const { user, logout } = useAuth();
   return (
     <aside className="flex h-full w-[260px] flex-col border-r border-slate-200/80 bg-white px-5 py-7">
       <div className="flex items-center justify-between">
@@ -60,9 +62,9 @@ function Sidebar({ close }) {
         })}
       </nav>
       <div className="mt-auto flex items-center gap-3 border-t border-slate-100 pt-5">
-        <span className="relative"><Avatar initials="ET" color="from-amber-300 to-orange-200" /><span className="absolute bottom-0 right-0 h-3 w-3 rounded-full border-2 border-white bg-emerald-500" /></span>
-        <div className="min-w-0"><p className="truncate text-sm font-bold text-slate-900">Easin Tanyir</p><p className="text-xs text-slate-500">Online</p></div>
-        <button type="button" className="ml-auto grid h-9 w-9 place-items-center rounded-xl bg-slate-50 text-slate-600 hover:bg-slate-100" aria-label="Log out (not yet connected)"><LogOut className="h-5 w-5" /></button>
+        <span className="relative"><Avatar initials={(user?.displayName || "U").slice(0,2).toUpperCase()} color="from-amber-300 to-orange-200" /><span className="absolute bottom-0 right-0 h-3 w-3 rounded-full border-2 border-white bg-emerald-500" /></span>
+        <div className="min-w-0"><p className="truncate text-sm font-bold text-slate-900">{user?.displayName || "Loading…"}</p><p className="text-xs text-slate-500">Online</p></div>
+        <button type="button" onClick={logout} className="ml-auto grid h-9 w-9 place-items-center rounded-xl bg-slate-50 text-slate-600 hover:bg-slate-100" aria-label="Log out"><LogOut className="h-5 w-5" /></button>
       </div>
     </aside>
   );

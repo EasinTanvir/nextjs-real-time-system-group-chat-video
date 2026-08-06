@@ -1,7 +1,10 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useRouter } from "next/navigation";
+import toast from "react-hot-toast";
+import api from "@/lib/api";
+import { useAuth } from "@/providers/auth-provider";
 import { useForm } from "react-hook-form";
 import AuthField from "@/components/auth/auth-field";
 import AuthPageShell from "@/components/auth/auth-page-shell";
@@ -39,16 +42,14 @@ const passwordRules = {
 };
 
 export default function RegisterPage() {
-  const [isReady, setIsReady] = useState(false);
+  const router = useRouter(); const { authenticate } = useAuth();
   const {
     register,
     handleSubmit,
     formState: { errors, isSubmitting },
   } = useForm({ mode: "onTouched", reValidateMode: "onChange" });
 
-  const onSubmit = () => {
-    setIsReady(true);
-  };
+  const onSubmit = async (values) => { try { const result = await api.post("/auth/register", values); authenticate(result); toast.success("Account created."); router.replace("/chat"); } catch (error) { toast.error(error.message); } };
 
   return (
     <AuthPageShell
@@ -92,14 +93,6 @@ export default function RegisterPage() {
         >
           {isSubmitting ? "Checking details..." : "Create account"}
         </button>
-        {isReady && (
-          <p
-            role="status"
-            className="mt-4 rounded-xl border border-blue-100 bg-blue-50 px-4 py-3 text-center text-sm leading-5 text-blue-700"
-          >
-            Form validation is complete. Connect your registration flow to continue.
-          </p>
-        )}
       </form>
       <p className="mt-7 text-center text-sm text-slate-500">
         Already have an account?{" "}
