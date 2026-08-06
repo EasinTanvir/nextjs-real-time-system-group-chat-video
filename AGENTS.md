@@ -400,7 +400,7 @@ Always use Clerk.
 
 # 9. Pages
 
-Allowed routes
+## Public Routes
 
 /
 
@@ -408,35 +408,142 @@ Landing Page
 
 /login
 
-/register
+Register Page
 
-/users
+---
 
-/friends
+## Protected Routes
 
 /profile
 
-/chat
-
-/chat/[conversationId]
-
-Do not create additional pages unless explicitly requested.
-
-Friend Requests belong inside:
-
-Notifications
-
-Modal
-
-Drawer
-
-Popover
-
-Group creation belongs inside a modal.
-
-Conversation settings belong inside the Chat page.
+User Profile
 
 ---
+
+## Chat Module
+
+The Chat module uses its own shared layout.
+
+The layout is responsible for:
+
+- Sidebar Navigation
+- User Profile
+- Search
+- Theme Toggle
+- Main Content Area
+
+The layout must remain mounted while navigating between chat pages.
+
+Only the main content should change.
+
+### Chat Routes
+
+/chat
+
+Displays:
+
+- Conversation List
+- Empty State (when no conversation is selected)
+
+/chat/conversation/[conversationId]
+
+Displays:
+
+- Selected Conversation
+- Private Chat
+- Group Chat
+
+The conversation type should be determined from the database, not from the route.
+
+/chat/users
+
+Displays:
+
+- Search Users
+- Discover Users
+- Send Friend Requests
+
+/chat/friends
+
+Displays:
+
+- Friends List
+- Pending Friend Requests
+- Sent Friend Requests
+- Received Friend Requests
+
+Do not create additional routes inside the Chat module unless explicitly requested.
+
+---
+
+## Sidebar Navigation
+
+The Chat sidebar contains:
+
+- Chats
+- Users
+- Friends
+
+Each item navigates to:
+
+/chat
+
+/chat/users
+
+/chat/friends
+
+The sidebar must remain visible while navigating between chat pages.
+
+---
+
+## Conversation Navigation
+
+Selecting a conversation should navigate to:
+
+/chat/conversation/[conversationId]
+
+Example:
+
+/chat/conversation/conv_01HZX8A2K4T3P9R5
+
+Refreshing the page must preserve the selected conversation.
+
+Browser Back/Forward navigation should work correctly.
+
+Conversation URLs should be shareable and bookmarkable.
+
+---
+
+## Modals
+
+Friend Requests
+
+- Notification Panel
+- Modal
+- Drawer
+- Popover
+
+Create Group
+
+- Modal
+
+Conversation Details
+
+- Right Drawer
+
+Edit Group
+
+- Modal
+
+Add Members
+
+- Modal
+
+Remove Members
+
+- Confirmation Dialog
+
+Do not create separate pages for these features unless explicitly requested.
 
 # 10. Chat Flow
 
