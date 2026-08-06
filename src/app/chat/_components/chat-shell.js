@@ -2,19 +2,20 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   CircleUserRound,
   LogOut,
   Menu,
   MessageCircle,
-  Moon,
-  SunMedium,
   UsersRound,
   UserRoundPlus,
+  Bell,
   X,
 } from "lucide-react";
 import { useAuth } from "@/providers/auth-provider";
+import api from "@/lib/api";
+import { connectSocket, getSocket } from "@/lib/socket";
 
 const navigation = [
   [MessageCircle, "Chats", "/chat"],
@@ -72,6 +73,10 @@ function Sidebar({ close }) {
 
 export default function ChatShell({ children }) {
   const [menuOpen, setMenuOpen] = useState(false);
+  const [notifications, setNotifications] = useState([]); const [unread, setUnread] = useState(0); const [notificationsOpen, setNotificationsOpen] = useState(false);
+  const loadNotifications = async () => { try { const [items, count] = await Promise.all([api.get("/notifications"), api.get("/notifications/unread-count")]); setNotifications(items); setUnread(count.count); } catch {} };
+  useEffect(() => { const timer = setTimeout(loadNotifications, 0); const socket = getSocket(); const received = ({ notification }) => { setNotifications((items) => [notification, ...items.filter((item) => item.id !== notification.id)].slice(0, 10)); setUnread((count) => count + 1); }; socket.on("notification:new", received); connectSocket().catch(() => {}); return () => { clearTimeout(timer); socket.off("notification:new", received); }; }, []);
+  const openNotifications = async () => { setNotificationsOpen((open) => !open); if (!notificationsOpen && unread) { try { await api.patch("/notifications/read-all"); setNotifications((items) => items.map((item) => ({ ...item, readAt: item.readAt || new Date().toISOString() }))); setUnread(0); } catch {} } };
   return (
     <div className="min-h-screen bg-[#fcfdff] text-slate-900 lg:flex">
       <div className="hidden h-screen shrink-0 lg:sticky lg:top-0 lg:block"><Sidebar close={() => {}} /></div>
@@ -86,8 +91,7 @@ export default function ChatShell({ children }) {
             <kbd className="hidden rounded-md text-xs font-semibold text-slate-500 sm:inline">⌘ K</kbd>
           </label>
           <div className="ml-auto flex items-center gap-2 sm:gap-5">
-            <button className="grid h-10 w-10 place-items-center rounded-xl text-slate-600 transition hover:bg-slate-50 hover:text-blue-600" aria-label="Toggle light theme"><SunMedium className="h-5 w-5" /></button>
-            <button className="grid h-10 w-10 place-items-center rounded-xl text-slate-600 transition hover:bg-slate-50 hover:text-blue-600" aria-label="Toggle dark theme"><Moon className="h-5 w-5" /></button>
+            <div className="relative"><button onClick={openNotifications} className="relative grid h-10 w-10 place-items-center rounded-xl text-slate-600 transition hover:bg-slate-50 hover:text-blue-600" aria-label="Notifications" aria-expanded={notificationsOpen}><Bell className="h-5 w-5" />{unread > 0 && <span className="absolute right-1 top-1 grid min-w-4 place-items-center rounded-full bg-rose-500 px-1 text-[10px] font-bold text-white">{unread > 9 ? "9+" : unread}</span>}</button>{notificationsOpen && <section className="absolute right-0 z-30 mt-2 w-80 rounded-xl border border-slate-200 bg-white p-3 shadow-xl" aria-label="Recent notifications"><h2 className="px-2 pb-2 text-sm font-bold">Notifications</h2>{notifications.length ? notifications.map((item) => <div key={item.id} className={`rounded-lg px-2 py-2 text-sm ${item.readAt ? "text-slate-600" : "bg-blue-50 text-slate-900"}`}><p className="font-semibold">{item.title}</p><p className="text-xs">{item.description}</p></div>) : <p className="px-2 py-4 text-sm text-slate-500">You&apos;re all caught up.</p>}</section>}</div>
             <span className="relative hidden sm:block"><Avatar initials="ET" color="from-amber-300 to-orange-200" /><span className="absolute bottom-0 right-0 h-3 w-3 rounded-full border-2 border-white bg-emerald-500" /></span>
           </div>
         </header>

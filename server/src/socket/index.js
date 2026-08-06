@@ -5,6 +5,10 @@ const { requireSocketAuth } = require('./middleware/auth');
 const { registerConversationHandlers } = require('./handlers/conversation-handler');
 const { registerMessageHandlers } = require('./handlers/message-handler');
 const { registerPresenceHandlers } = require('./handlers/presence-handler');
+const { userRoom } = require('./rooms');
+
+let socketServer;
+const emitToUser = (userId, event, payload) => socketServer?.to(userRoom(userId)).emit(event, payload);
 
 const createSocketServer = (httpServer) => {
   const io = new Server(httpServer, {
@@ -15,6 +19,7 @@ const createSocketServer = (httpServer) => {
   });
 
   io.use(requireSocketAuth);
+  socketServer = io;
   io.on(EVENTS.CONNECTION, (socket) => {
     console.info(`[socket] connected userId=${socket.data.userId} socketId=${socket.id}`);
     registerPresenceHandlers(io, socket);
@@ -27,4 +32,4 @@ const createSocketServer = (httpServer) => {
   return io;
 };
 
-module.exports = { createSocketServer };
+module.exports = { createSocketServer, emitToUser };

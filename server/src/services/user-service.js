@@ -1,6 +1,6 @@
 const { and, eq, gt, ilike, or } = require("drizzle-orm");
 const { db } = require("../db/client");
-const { users, userSettings } = require("../db/schema");
+const { users, userSettings, friendRequests, friendships } = require("../db/schema");
 const { AppError } = require("../utils/app-error");
 
 const publicUser = (user) => user && ({ id: user.id, username: user.username, displayName: user.displayName, avatarUrl: user.avatarUrl, bio: user.bio, lastSeenAt: user.lastSeenAt, createdAt: user.createdAt });
@@ -26,7 +26,15 @@ const listUsers = async (actorId, { search, limit, cursor }) => {
   if (search) filters.push(or(ilike(users.username, `%${search}%`), ilike(users.displayName, `%${search}%`)));
   const rows = await db.select().from(users).where(and(...filters)).limit(limit + 1);
   const hasMore = rows.length > limit;
-  const result = rows.slice(0, limit).filter((user) => user.id !== actorId).map(publicUser);
+  const result = await Promise.all(rows.slice(0, limit).filter((user) => user.id !== actorId).map(async (user) => {
+    const [one, two] = actorId < user.id ? [actorId, user.id] : [user.id, actorId];
+    const friendship = (await db.select({ id: friendships.id }).from(friendships).where(and(eq(friendships.userOneId, one), eq(friendships.userTwoId, two))).limit(1))[0];
+    if (friendship) return { ...publicUser(user), relationship: "friends", requestId: null };
+    const outgoing = (await db.select({ id: friendRequests.id }).from(friendRequests).where(and(eq(friendRequests.senderId, actorId), eq(friendRequests.receiverId, user.id), eq(friendRequests.status, "pending"))).limit(1))[0];
+    if (outgoing) return { ...publicUser(user), relationship: "outgoing_pending", requestId: outgoing.id };
+    const incoming = (await db.select({ id: friendRequests.id }).from(friendRequests).where(and(eq(friendRequests.senderId, user.id), eq(friendRequests.receiverId, actorId), eq(friendRequests.status, "pending"))).limit(1))[0];
+    return { ...publicUser(user), relationship: incoming ? "incoming_pending" : "none", requestId: incoming?.id || null };
+  }));
   return { items: result, nextCursor: hasMore ? rows[limit - 1]?.id || null : null };
 };
 

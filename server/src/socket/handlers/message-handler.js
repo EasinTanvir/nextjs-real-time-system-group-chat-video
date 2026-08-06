@@ -11,9 +11,11 @@ const registerMessageHandlers = (io, socket) => {
   registerEvent(socket, EVENTS.MESSAGE_SEND, async (payload) => {
     const conversationId = conversationIdFrom(payload);
     const content = string(payload?.content, 'content', { required: true, max: 5000 });
-    const message = await create(socket.data.userId, conversationId, content);
-    io.to(conversationRoom(conversationId)).emit(EVENTS.MESSAGE_NEW, { message });
-    return { message };
+    const result = await create(socket.data.userId, conversationId, content);
+    io.to(conversationRoom(conversationId)).emit(EVENTS.MESSAGE_NEW, { message: result.message });
+    const { userRoom } = require('../rooms');
+    result.notifications.forEach((notification) => io.to(userRoom(notification.recipientId)).emit(EVENTS.NOTIFICATION_NEW, { notification }));
+    return { message: result.message };
   });
 
   registerEvent(socket, EVENTS.TYPING_START, async (payload) => {

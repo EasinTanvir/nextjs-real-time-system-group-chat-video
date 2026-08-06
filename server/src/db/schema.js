@@ -22,6 +22,7 @@ const friendRequestStatusEnum = pgEnum("friend_request_status", [
 
 const conversationTypeEnum = pgEnum("conversation_type", ["direct", "group"]);
 const conversationMemberRoleEnum = pgEnum("conversation_member_role", ["owner", "admin", "member"]);
+const notificationTypeEnum = pgEnum("notification_type", ["friend_request", "friend_accepted", "friend_rejected", "group_created", "group_member_added", "group_member_removed", "message"]);
 
 const users = pgTable(
   "users",
@@ -172,6 +173,26 @@ const messageReads = pgTable(
   ],
 );
 
+const notifications = pgTable(
+  "notifications",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    recipientId: uuid("recipient_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+    actorId: uuid("actor_id").references(() => users.id, { onDelete: "set null" }),
+    conversationId: uuid("conversation_id").references(() => conversations.id, { onDelete: "cascade" }),
+    type: notificationTypeEnum("notification_type").notNull(),
+    title: text("title").notNull(),
+    description: text("description").notNull(),
+    readAt: timestamp("read_at", { withTimezone: true }),
+    createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull(),
+  },
+  (table) => [
+    index("notifications_recipient_created_idx").on(table.recipientId, table.createdAt.desc()),
+    index("notifications_recipient_unread_idx").on(table.recipientId, table.createdAt.desc()).where(sql`${table.readAt} IS NULL`),
+  ],
+);
+
 const usersRelations = relations(users, ({ many, one }) => ({
   settings: one(userSettings),
   sentFriendRequests: many(friendRequests, { relationName: "friend_request_sender" }),
@@ -179,6 +200,8 @@ const usersRelations = relations(users, ({ many, one }) => ({
   sentMessages: many(messages),
   memberships: many(conversationMembers),
   messageReads: many(messageReads),
+  receivedNotifications: many(notifications, { relationName: "notification_recipient" }),
+  actedNotifications: many(notifications, { relationName: "notification_actor" }),
 }));
 
 const friendRequestsRelations = relations(friendRequests, ({ one }) => ({
@@ -210,10 +233,17 @@ const messageReadsRelations = relations(messageReads, ({ one }) => ({
   user: one(users, { fields: [messageReads.userId], references: [users.id] }),
 }));
 
+const notificationsRelations = relations(notifications, ({ one }) => ({
+  recipient: one(users, { fields: [notifications.recipientId], references: [users.id], relationName: "notification_recipient" }),
+  actor: one(users, { fields: [notifications.actorId], references: [users.id], relationName: "notification_actor" }),
+  conversation: one(conversations, { fields: [notifications.conversationId], references: [conversations.id] }),
+}));
+
 module.exports = {
   friendRequestStatusEnum,
   conversationTypeEnum,
   conversationMemberRoleEnum,
+  notificationTypeEnum,
   users,
   userSettings,
   friendRequests,
@@ -222,10 +252,12 @@ module.exports = {
   conversationMembers,
   messages,
   messageReads,
+  notifications,
   usersRelations,
   friendRequestsRelations,
   conversationsRelations,
   messagesRelations,
   conversationMembersRelations,
   messageReadsRelations,
+  notificationsRelations,
 };

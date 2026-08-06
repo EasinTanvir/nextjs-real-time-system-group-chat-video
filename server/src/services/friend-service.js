@@ -1,8 +1,9 @@
 const { and, desc, eq, or } = require("drizzle-orm");
 const { db } = require("../db/client");
-const { friendRequests, friendships, users } = require("../db/schema");
+const { friendRequests, friendships, users, conversations, conversationMembers } = require("../db/schema");
 const { AppError } = require("../utils/app-error");
 const { getUser, publicUser } = require("./user-service");
+const { create: createNotification } = require("./notification-service");
 const pair = (a, b) => a < b ? [a, b] : [b, a];
 const isFriends = async (client, a, b) => { const [one, two] = pair(a, b); return (await client.select({ id: friendships.id }).from(friendships).where(and(eq(friendships.userOneId, one), eq(friendships.userTwoId, two))).limit(1))[0]; };
 
@@ -13,7 +14,9 @@ const createRequest = async (senderId, receiverId) => db.transaction(async (tx) 
   const reverse = (await tx.select().from(friendRequests).where(and(eq(friendRequests.senderId, receiverId), eq(friendRequests.receiverId, senderId), eq(friendRequests.status, "pending"))).limit(1))[0];
   if (reverse) throw new AppError(409, "That user has already sent you a friend request. Accept or reject it instead.");
   const [request] = await tx.insert(friendRequests).values({ senderId, receiverId }).returning();
-  return request;
+  const sender = await getUser(senderId);
+  const notification = await createNotification(tx, { recipientId: receiverId, actorId: senderId, type: "friend_request", title: "New friend request", description: `${sender.displayName} wants to connect.` });
+  return { request, notification };
 });
 const listRequests = async (userId, kind) => {
   const where = kind === "sent" ? eq(friendRequests.senderId, userId) : eq(friendRequests.receiverId, userId);
@@ -26,8 +29,23 @@ const respond = async (actorId, requestId, status) => db.transaction(async (tx) 
   if (request.receiverId !== actorId) throw new AppError(403, "Only the recipient can respond to this request.");
   if (request.status !== "pending") throw new AppError(409, "This friend request has already been handled.");
   const [updated] = await tx.update(friendRequests).set({ status, respondedAt: new Date(), updatedAt: new Date() }).where(eq(friendRequests.id, requestId)).returning();
-  if (status === "accepted") { const [one, two] = pair(request.senderId, request.receiverId); await tx.insert(friendships).values({ userOneId: one, userTwoId: two }).onConflictDoNothing(); }
-  return updated;
+  let conversation;
+  let notification;
+  if (status === "accepted") {
+    const [one, two] = pair(request.senderId, request.receiverId);
+    await tx.insert(friendships).values({ userOneId: one, userTwoId: two }).onConflictDoNothing();
+    conversation = (await tx.select().from(conversations).where(and(eq(conversations.directUserOneId, one), eq(conversations.directUserTwoId, two))).limit(1))[0];
+    if (!conversation) {
+      [conversation] = await tx.insert(conversations).values({ type: "direct", directUserOneId: one, directUserTwoId: two, createdById: actorId }).returning();
+      await tx.insert(conversationMembers).values([{ conversationId: conversation.id, userId: one, role: "member" }, { conversationId: conversation.id, userId: two, role: "member" }]);
+    }
+    const actor = await getUser(actorId);
+    notification = await createNotification(tx, { recipientId: request.senderId, actorId, conversationId: conversation.id, type: "friend_accepted", title: "Friend request accepted", description: `${actor.displayName} is now your friend.` });
+  } else {
+    const actor = await getUser(actorId);
+    notification = await createNotification(tx, { recipientId: request.senderId, actorId, type: "friend_rejected", title: "Friend request declined", description: `${actor.displayName} declined your friend request.` });
+  }
+  return { request: updated, conversation, notification };
 });
 const cancel = async (actorId, requestId) => {
   const request = (await db.select().from(friendRequests).where(eq(friendRequests.id, requestId)).limit(1))[0];

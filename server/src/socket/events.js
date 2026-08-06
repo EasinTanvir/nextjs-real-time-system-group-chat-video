@@ -12,6 +12,10 @@ const EVENTS = Object.freeze({
   MESSAGE_READ_UPDATED: 'message:read:updated',
   USER_ONLINE: 'user:online',
   USER_OFFLINE: 'user:offline',
+  FRIENDSHIP_UPDATED: 'friendship:updated',
+  CONVERSATION_AVAILABLE: 'conversation:available',
+  NOTIFICATION_NEW: 'notification:new',
+  NOTIFICATION_READ: 'notification:read',
 });
 
 module.exports = { EVENTS };
