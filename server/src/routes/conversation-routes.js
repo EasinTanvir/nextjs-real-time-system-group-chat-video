@@ -1,3 +1,28 @@
-const router = require('express').Router(); const controller = require('../controllers/conversation-controller'); const messages = require('../controllers/message-controller');
-router.route('/conversations').get(controller.list).post(controller.create); router.post('/conversations/direct', controller.direct); router.route('/conversations/:conversationId').get(controller.get).patch(controller.patch).delete(controller.remove); router.route('/conversations/:conversationId/members').get(controller.members).post(controller.addMember); router.route('/conversations/:conversationId/members/:userId').patch(controller.patchMember).delete(controller.removeMember); router.route('/conversations/:conversationId/messages').get(messages.list).post(messages.create); router.route('/conversations/:conversationId/messages/:messageId').patch(messages.patch).delete(messages.remove); router.post('/conversations/:conversationId/read', messages.read);
+const router = require("express").Router();
+const controller = require("../controllers/conversation-controller");
+const messages = require("../controllers/message-controller");
+router.route("/conversations").get(controller.list).post(controller.create);
+router.post("/conversations/direct", controller.direct);
+router
+  .route("/conversations/:conversationId")
+  .get(controller.get)
+  .patch(controller.patch)
+  .delete(controller.remove);
+router
+  .route("/conversations/:conversationId/members")
+  .get(controller.members)
+  .post(controller.addMember);
+router
+  .route("/conversations/:conversationId/members/:userId")
+  .patch(controller.patchMember)
+  .delete(controller.removeMember);
+router
+  .route("/conversations/:conversationId/messages")
+  .get(messages.list)
+  .post(messages.create);
+router
+  .route("/conversations/:conversationId/messages/:messageId")
+  .patch(messages.patch)
+  .delete(messages.remove);
+router.post("/conversations/:conversationId/read", messages.read);
 module.exports = router;
