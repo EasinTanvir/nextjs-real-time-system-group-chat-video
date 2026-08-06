@@ -29,6 +29,7 @@ const users = pgTable(
     id: uuid("id").defaultRandom().primaryKey(),
     email: text("email").notNull(),
     username: text("username").notNull(),
+    passwordHash: text("password_hash").notNull(),
     displayName: text("display_name").notNull(),
     avatarUrl: text("avatar_url"),
     bio: text("bio"),

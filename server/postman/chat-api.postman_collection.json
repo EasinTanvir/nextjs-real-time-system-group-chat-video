@@ -1,9 +1,14 @@
 {
-  "info": { "name": "Chat API", "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json", "description": "Set authToken after connecting your verified auth middleware. This API intentionally returns 401 until that middleware sets req.auth.userId." },
+  "info": { "name": "Chat API", "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json", "description": "Register or log in first. Each successful auth request stores its JWT in the authToken collection variable for protected requests." },
   "variable": [{ "key": "baseUrl", "value": "http://localhost:4000" }, { "key": "authToken", "value": "" }, { "key": "userId", "value": "" }, { "key": "friendId", "value": "" }, { "key": "requestId", "value": "" }, { "key": "conversationId", "value": "" }, { "key": "messageId", "value": "" }],
   "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{authToken}}", "type": "string" }] },
   "item": [
     { "name": "Health", "request": { "method": "GET", "url": "{{baseUrl}}/health" } },
+    { "name": "Authentication", "item": [
+      { "name": "Register", "event": [{ "listen": "test", "script": { "exec": ["const body = pm.response.json();", "if (body.success) pm.collectionVariables.set('authToken', body.data.token);"] } }], "request": { "auth": { "type": "noauth" }, "method": "POST", "header": [{ "key": "Content-Type", "value": "application/json" }], "body": { "mode": "raw", "raw": "{\n  \"email\": \"ada@example.com\",\n  \"username\": \"ada\",\n  \"displayName\": \"Ada Lovelace\",\n  \"password\": \"secure-password-123\"\n}" }, "url": "{{baseUrl}}/api/v1/auth/register" } },
+      { "name": "Login", "event": [{ "listen": "test", "script": { "exec": ["const body = pm.response.json();", "if (body.success) pm.collectionVariables.set('authToken', body.data.token);"] } }], "request": { "auth": { "type": "noauth" }, "method": "POST", "header": [{ "key": "Content-Type", "value": "application/json" }], "body": { "mode": "raw", "raw": "{\n  \"email\": \"ada@example.com\",\n  \"password\": \"secure-password-123\"\n}" }, "url": "{{baseUrl}}/api/v1/auth/login" } },
+      { "name": "Invalid login", "request": { "auth": { "type": "noauth" }, "method": "POST", "header": [{ "key": "Content-Type", "value": "application/json" }], "body": { "mode": "raw", "raw": "{ \"email\": \"ada@example.com\", \"password\": \"wrong-password\" }" }, "url": "{{baseUrl}}/api/v1/auth/login" } }
+    ] },
     { "name": "Users", "item": [
       { "name": "My profile", "request": { "method": "GET", "url": "{{baseUrl}}/api/v1/me" } },
       { "name": "Update profile", "request": { "method": "PATCH", "header": [{ "key": "Content-Type", "value": "application/json" }], "body": { "mode": "raw", "raw": "{\n  \"displayName\": \"Ada Lovelace\",\n  \"bio\": \"Building chat apps.\"\n}" }, "url": "{{baseUrl}}/api/v1/me" } },
