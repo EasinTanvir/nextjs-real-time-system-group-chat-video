@@ -412,6 +412,8 @@ Landing Page
 
 /users
 
+/friends
+
 /profile
 
 /chat
