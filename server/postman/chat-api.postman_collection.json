@@ -1,0 +1,46 @@
+{
+  "info": { "name": "Chat API", "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json", "description": "Set authToken after connecting your verified auth middleware. This API intentionally returns 401 until that middleware sets req.auth.userId." },
+  "variable": [{ "key": "baseUrl", "value": "http://localhost:4000" }, { "key": "authToken", "value": "" }, { "key": "userId", "value": "" }, { "key": "friendId", "value": "" }, { "key": "requestId", "value": "" }, { "key": "conversationId", "value": "" }, { "key": "messageId", "value": "" }],
+  "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{authToken}}", "type": "string" }] },
+  "item": [
+    { "name": "Health", "request": { "method": "GET", "url": "{{baseUrl}}/health" } },
+    { "name": "Users", "item": [
+      { "name": "My profile", "request": { "method": "GET", "url": "{{baseUrl}}/api/v1/me" } },
+      { "name": "Update profile", "request": { "method": "PATCH", "header": [{ "key": "Content-Type", "value": "application/json" }], "body": { "mode": "raw", "raw": "{\n  \"displayName\": \"Ada Lovelace\",\n  \"bio\": \"Building chat apps.\"\n}" }, "url": "{{baseUrl}}/api/v1/me" } },
+      { "name": "My settings", "request": { "method": "GET", "url": "{{baseUrl}}/api/v1/me/settings" } },
+      { "name": "Update settings", "request": { "method": "PATCH", "header": [{ "key": "Content-Type", "value": "application/json" }], "body": { "mode": "raw", "raw": "{\n  \"theme\": \"dark\",\n  \"notificationsEnabled\": true\n}" }, "url": "{{baseUrl}}/api/v1/me/settings" } },
+      { "name": "Discover users", "request": { "method": "GET", "url": "{{baseUrl}}/api/v1/users?search=ada&limit=25" } },
+      { "name": "Get user", "request": { "method": "GET", "url": "{{baseUrl}}/api/v1/users/{{userId}}" } }
+    ] },
+    { "name": "Friendships", "item": [
+      { "name": "Send request", "request": { "method": "POST", "header": [{ "key": "Content-Type", "value": "application/json" }], "body": { "mode": "raw", "raw": "{ \"receiverId\": \"{{friendId}}\" }" }, "url": "{{baseUrl}}/api/v1/friend-requests" } },
+      { "name": "Received requests", "request": { "method": "GET", "url": "{{baseUrl}}/api/v1/friend-requests" } },
+      { "name": "Sent requests", "request": { "method": "GET", "url": "{{baseUrl}}/api/v1/friend-requests?type=sent" } },
+      { "name": "Accept request", "request": { "method": "PATCH", "header": [{ "key": "Content-Type", "value": "application/json" }], "body": { "mode": "raw", "raw": "{ \"status\": \"accepted\" }" }, "url": "{{baseUrl}}/api/v1/friend-requests/{{requestId}}" } },
+      { "name": "Reject request", "request": { "method": "PATCH", "header": [{ "key": "Content-Type", "value": "application/json" }], "body": { "mode": "raw", "raw": "{ \"status\": \"rejected\" }" }, "url": "{{baseUrl}}/api/v1/friend-requests/{{requestId}}" } },
+      { "name": "Cancel sent request", "request": { "method": "DELETE", "url": "{{baseUrl}}/api/v1/friend-requests/{{requestId}}" } },
+      { "name": "List friends", "request": { "method": "GET", "url": "{{baseUrl}}/api/v1/friends" } },
+      { "name": "Remove friend", "request": { "method": "DELETE", "url": "{{baseUrl}}/api/v1/friends/{{friendId}}" } }
+    ] },
+    { "name": "Conversations", "item": [
+      { "name": "List conversations", "request": { "method": "GET", "url": "{{baseUrl}}/api/v1/conversations" } },
+      { "name": "Create direct", "request": { "method": "POST", "header": [{ "key": "Content-Type", "value": "application/json" }], "body": { "mode": "raw", "raw": "{ \"userId\": \"{{friendId}}\" }" }, "url": "{{baseUrl}}/api/v1/conversations/direct" } },
+      { "name": "Create group", "request": { "method": "POST", "header": [{ "key": "Content-Type", "value": "application/json" }], "body": { "mode": "raw", "raw": "{\n  \"type\": \"group\",\n  \"name\": \"Project Aurora\",\n  \"description\": \"Launch discussion\",\n  \"memberIds\": [\"{{friendId}}\"]\n}" }, "url": "{{baseUrl}}/api/v1/conversations" } },
+      { "name": "Conversation details", "request": { "method": "GET", "url": "{{baseUrl}}/api/v1/conversations/{{conversationId}}" } },
+      { "name": "Update group", "request": { "method": "PATCH", "header": [{ "key": "Content-Type", "value": "application/json" }], "body": { "mode": "raw", "raw": "{ \"name\": \"Project Aurora 2\" }" }, "url": "{{baseUrl}}/api/v1/conversations/{{conversationId}}" } },
+      { "name": "Delete group", "request": { "method": "DELETE", "url": "{{baseUrl}}/api/v1/conversations/{{conversationId}}" } },
+      { "name": "List members", "request": { "method": "GET", "url": "{{baseUrl}}/api/v1/conversations/{{conversationId}}/members" } },
+      { "name": "Add member", "request": { "method": "POST", "header": [{ "key": "Content-Type", "value": "application/json" }], "body": { "mode": "raw", "raw": "{ \"userId\": \"{{friendId}}\" }" }, "url": "{{baseUrl}}/api/v1/conversations/{{conversationId}}/members" } },
+      { "name": "Make admin", "request": { "method": "PATCH", "header": [{ "key": "Content-Type", "value": "application/json" }], "body": { "mode": "raw", "raw": "{ \"role\": \"admin\" }" }, "url": "{{baseUrl}}/api/v1/conversations/{{conversationId}}/members/{{friendId}}" } },
+      { "name": "Remove member", "request": { "method": "DELETE", "url": "{{baseUrl}}/api/v1/conversations/{{conversationId}}/members/{{friendId}}" } }
+    ] },
+    { "name": "Messages", "item": [
+      { "name": "List messages", "request": { "method": "GET", "url": "{{baseUrl}}/api/v1/conversations/{{conversationId}}/messages?limit=25" } },
+      { "name": "Send message", "request": { "method": "POST", "header": [{ "key": "Content-Type", "value": "application/json" }], "body": { "mode": "raw", "raw": "{ \"content\": \"Hello from Postman\" }" }, "url": "{{baseUrl}}/api/v1/conversations/{{conversationId}}/messages" } },
+      { "name": "Edit message", "request": { "method": "PATCH", "header": [{ "key": "Content-Type", "value": "application/json" }], "body": { "mode": "raw", "raw": "{ \"content\": \"Updated message\" }" }, "url": "{{baseUrl}}/api/v1/conversations/{{conversationId}}/messages/{{messageId}}" } },
+      { "name": "Delete message", "request": { "method": "DELETE", "url": "{{baseUrl}}/api/v1/conversations/{{conversationId}}/messages/{{messageId}}" } },
+      { "name": "Mark read", "request": { "method": "POST", "header": [{ "key": "Content-Type", "value": "application/json" }], "body": { "mode": "raw", "raw": "{ \"messageId\": \"{{messageId}}\" }" }, "url": "{{baseUrl}}/api/v1/conversations/{{conversationId}}/read" } }
+    ] },
+    { "name": "Expected validation error", "request": { "method": "POST", "header": [{ "key": "Content-Type", "value": "application/json" }], "body": { "mode": "raw", "raw": "{ \"content\": \"\" }" }, "url": "{{baseUrl}}/api/v1/conversations/not-a-uuid/messages" } }
+  ]
+}
