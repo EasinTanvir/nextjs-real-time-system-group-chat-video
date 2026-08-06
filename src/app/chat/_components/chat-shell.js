@@ -1,18 +1,14 @@
 "use client";
 
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { useState } from "react";
 import {
-  Bell,
-  Bookmark,
-  ChevronRight,
   CircleUserRound,
-  Ellipsis,
+  LogOut,
   Menu,
   MessageCircle,
   Moon,
-  Phone,
-  Settings,
   SunMedium,
   UsersRound,
   UserRoundPlus,
@@ -23,18 +19,6 @@ const navigation = [
   [MessageCircle, "Chats", "/chat", "6"],
   [UsersRound, "Users", "/chat/users"],
   [UserRoundPlus, "Friends", "/chat/friends"],
-  [UsersRound, "Groups", "/chat/groups"],
-  [Phone, "Calls", "/chat/calls"],
-  [Bell, "Notifications", "/chat/notifications", "3"],
-  [Bookmark, "Bookmarks", "/chat/bookmarks"],
-  [Settings, "Settings", "/chat/settings"],
-];
-
-const favorites = [
-  ["DT", "Design Team", "from-violet-300 to-blue-200"],
-  ["EJ", "Emma Johnson", "from-rose-300 to-orange-200"],
-  ["BF", "Best Friends", "from-sky-300 to-indigo-300"],
-  ["PA", "Project Alpha", "from-slate-500 to-slate-700"],
 ];
 
 function Brand() {
@@ -54,6 +38,7 @@ function Avatar({ initials, color, size = "md" }) {
 }
 
 function Sidebar({ close }) {
+  const pathname = usePathname();
   return (
     <aside className="flex h-full w-[260px] flex-col border-r border-slate-200/80 bg-white px-5 py-7">
       <div className="flex items-center justify-between">
@@ -64,7 +49,7 @@ function Sidebar({ close }) {
       </div>
       <nav className="mt-9 space-y-1" aria-label="Chat navigation">
         {navigation.map(([Icon, label, href, count]) => {
-          const active = label === "Users";
+          const active = pathname === href;
           return (
             <Link key={label} href={href} onClick={close} aria-current={active ? "page" : undefined} className={`flex h-12 items-center gap-4 rounded-xl px-4 text-[15px] font-semibold transition ${active ? "bg-gradient-to-r from-blue-50 to-indigo-50/90 text-blue-600" : "text-slate-700 hover:bg-slate-50 hover:text-blue-600"}`}>
               <Icon className="h-5 w-5" strokeWidth={active ? 2.4 : 2} />
@@ -74,25 +59,10 @@ function Sidebar({ close }) {
           );
         })}
       </nav>
-      <div className="mt-5 border-t border-slate-100 pt-5">
-        <div className="flex items-center justify-between px-3">
-          <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Favorites</p>
-          <button className="text-xl leading-none text-slate-500 transition hover:text-blue-600" aria-label="Add favorite">+</button>
-        </div>
-        <div className="mt-4 space-y-3">
-          {favorites.map(([initials, label, color]) => (
-            <div key={label} className="flex items-center gap-3 px-3">
-              <Avatar initials={initials} color={color} size="sm" />
-              <span className="min-w-0 flex-1 truncate text-sm font-semibold text-slate-800">{label}</span>
-              <span className="h-2.5 w-2.5 rounded-full bg-emerald-500" aria-label="Active" />
-            </div>
-          ))}
-        </div>
-      </div>
       <div className="mt-auto flex items-center gap-3 border-t border-slate-100 pt-5">
         <span className="relative"><Avatar initials="ET" color="from-amber-300 to-orange-200" /><span className="absolute bottom-0 right-0 h-3 w-3 rounded-full border-2 border-white bg-emerald-500" /></span>
         <div className="min-w-0"><p className="truncate text-sm font-bold text-slate-900">Easin Tanyir</p><p className="text-xs text-slate-500">Online</p></div>
-        <button className="ml-auto grid h-9 w-9 place-items-center rounded-xl bg-slate-50 text-slate-600 hover:bg-slate-100" aria-label="Open account menu"><Ellipsis className="h-5 w-5" /></button>
+        <button type="button" className="ml-auto grid h-9 w-9 place-items-center rounded-xl bg-slate-50 text-slate-600 hover:bg-slate-100" aria-label="Log out (not yet connected)"><LogOut className="h-5 w-5" /></button>
       </div>
     </aside>
   );
