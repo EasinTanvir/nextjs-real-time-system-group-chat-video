@@ -90,13 +90,9 @@ The Chat page displays both private conversations and group conversations in a s
 
 Selecting any conversation navigates to:
 
-/chat/[conversationId]
+/chat/conversation[conversationId]
 
 The selected conversation opens on the right side.
-
-Friend Requests and Groups are NOT separate pages.
-
-Everything related to chatting belongs inside the Chat experience.
 
 ---
 
@@ -360,6 +356,8 @@ React
 
 TailwindCSS
 
+lucide-react
+
 shadcn/ui
 
 React Hook Form
@@ -414,9 +412,7 @@ Register Page
 
 ## Protected Routes
 
-/profile
-
-User Profile
+Except Public page all are protected
 
 ---
 
@@ -599,21 +595,45 @@ Responsive Layout
 
 Database: Neon PostgreSQL
 
-Primary entities
+Primary Entities
 
-Users
+- Users
+- User Settings
+- Friend Requests
+- Friendships
+- Conversations
+- Conversation Members
+- Messages
+- Message Reads
 
-Friend Requests
+A conversation represents both:
 
-Friendships
+- Direct Messages
+- Group Chats
 
-Conversations
+Do not create a separate Groups table.
 
-Conversation Members
+Instead, use a `type` field on the Conversations table:
 
-Messages
+- direct
+- group
 
-Groups
+Conversation Members determine:
+
+- Which users belong to a conversation
+- User roles within a group (owner, admin, member)
+
+Friendships should only contain accepted relationships.
+
+Friend Requests should track:
+
+- Pending
+- Accepted
+- Rejected
+
+Messages belong to a Conversation.
+
+Message Reads are responsible for tracking read receipts and message status.
 
 Do not duplicate user information.
 
@@ -621,11 +641,11 @@ Normalize relationships.
 
 Use foreign keys.
 
-Prefer proper indexing.
+Create proper indexes.
 
-Keep schemas scalable.
+Design schemas for scalability.
 
----
+Business logic should determine conversation behavior, not separate database structures.
 
 # 12. Authentication
 
