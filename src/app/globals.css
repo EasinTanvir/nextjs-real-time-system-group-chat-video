@@ -1,1 +1,61 @@
 @import "tailwindcss";
+
+@theme inline {
+  --color-canvas: var(--canvas);
+  --color-board: var(--board);
+  --color-surface: var(--surface);
+  --color-soft: var(--soft);
+  --color-subtle: var(--subtle);
+  --color-line: var(--line);
+  --color-ink: var(--ink);
+  --color-muted: var(--muted);
+  --color-icon: var(--icon);
+  --color-primary: var(--primary);
+  --color-primary-hover: var(--primary-hover);
+  --color-secondary: var(--secondary);
+  --color-secondary-hover: var(--secondary-hover);
+  --color-success: var(--success);
+  --color-warning: var(--warning);
+  --color-danger: var(--danger);
+  --color-danger-hover: var(--danger-hover);
+  --color-dark-base: var(--dark-base);
+  --color-dark-surface: var(--dark-surface);
+  --color-dark-card: var(--dark-card);
+  --color-dark-border: var(--dark-border);
+  --color-dark-text: var(--dark-text);
+  --color-dark-muted: var(--dark-muted);
+  --shadow-panel: 0 1px 3px rgb(15 23 42 / 0.03), 0 8px 24px rgb(15 23 42 / 0.025);
+  --shadow-card: 0 5px 12px rgb(15 23 42 / 0.09);
+  --shadow-board: 0 16px 55px rgb(15 23 42 / 0.06);
+}
+
+:root {
+  --canvas: #f8fafc;
+  --board: #ffffff;
+  --surface: #ffffff;
+  --soft: #f8fafc;
+  --subtle: #f1f5f9;
+  --line: #e2e8f0;
+  --ink: #0f172a;
+  --muted: #64748b;
+  --icon: #475569;
+  --primary: #2563eb;
+  --primary-hover: #1d4ed8;
+  --secondary: #6366f1;
+  --secondary-hover: #4f46e5;
+  --success: #22c55e;
+  --warning: #f59e0b;
+  --danger: #ef4444;
+  --danger-hover: #dc2626;
+  --dark-base: #09090b;
+  --dark-surface: #18181b;
+  --dark-card: #27272a;
+  --dark-border: #3f3f46;
+  --dark-text: #f4f4f5;
+  --dark-muted: #a1a1aa;
+}
+
+* { box-sizing: border-box; }
+html { background: var(--canvas); }
+body { margin: 0; background: var(--canvas); }
+button, a { -webkit-tap-highlight-color: transparent; }
