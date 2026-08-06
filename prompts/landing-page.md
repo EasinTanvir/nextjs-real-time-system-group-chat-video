@@ -30,7 +30,7 @@ Replace the placeholder home page with a polished, responsive Chatify marketing 
 - “Landing page” refers to `/` in `src/app/page.js`.
 - The supplied screenshot is the visual reference, not a request to implement a functional chat client.
 - Chat UI data is static demo content and should not make API calls or require authentication.
-- Existing Clerk routes may not yet exist, so action destinations should be conservative and easy to update later.
+- Authentication routes may not yet exist, so action destinations should be conservative and easy to update later.
 
 ## Files Likely To Change
 

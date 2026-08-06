@@ -37,7 +37,7 @@ Frontend:
 - Next.js App Router
 - TailwindCSS
 - shadcn/ui
-- Clerk Authentication
+- Authentication is implemented and maintained manually by the project owner
 
 Backend:
 
@@ -131,9 +131,7 @@ Never begin implementation before creating the prompt unless the user explicitly
 
 # 4. Skills
 
-Use only these project skills.
-
-.agents/skills/clerk
+Use only these project skills when they are relevant to the requested feature.
 
 .agents/skills/neon-postgres
 
@@ -144,16 +142,6 @@ Use them for:
 node_modules/next/dist/docs/
 
 Latest Next.js documentation
-
-clerk
-
-Authentication
-
-Middleware
-
-Protected Routes
-
-User Management
 
 neon-postgres
 
@@ -380,19 +368,9 @@ Neon PostgreSQL
 
 Drizzle ORM
 
-JWT verification using Clerk
+Authentication is implemented and maintained manually by the project owner.
 
-Authentication
-
-Clerk
-
-Do not build a custom authentication system.
-
-Do not implement password hashing.
-
-Do not store passwords.
-
-Always use Clerk.
+Do not add, replace, or modify authentication behavior unless the user explicitly requests it.
 
 ---
 
@@ -649,37 +627,15 @@ Business logic should determine conversation behavior, not separate database str
 
 # 12. Authentication
 
-Authentication is handled exclusively by Clerk.
+Authentication is implemented and maintained manually by the project owner.
 
-Frontend Environment Variables
+Do not add, replace, configure, or modify authentication flows, providers, middleware, credentials, sessions, or tokens unless the user explicitly requests it.
 
-NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY
-
-CLERK_SECRET_KEY
-
-Backend
-
-The backend must verify Clerk JWT tokens before accessing protected APIs.
-
-Never trust client-provided user IDs.
-
-Always resolve the authenticated user from the verified Clerk token.
-
-Never build custom login endpoints.
-
-Never store passwords.
-
-Never replace Clerk authentication.
+When working on protected features, preserve the existing authentication boundaries and never trust client-provided user IDs, roles, or permissions.
 
 ---
 
 # 13. Environment Variables
-
-Frontend
-
-NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY
-
-CLERK_SECRET_KEY
 
 Backend
 
@@ -822,7 +778,6 @@ Keep queries optimized.
 Never expose:
 
 - DATABASE_URL
-- Clerk Secret Key
 - Server Tokens
 - JWT Secrets
 - Internal APIs

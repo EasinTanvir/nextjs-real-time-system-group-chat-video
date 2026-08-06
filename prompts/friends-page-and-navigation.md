@@ -7,7 +7,7 @@ Add a responsive static Friends page at `/chat/friends`, visually aligned with t
 ## Skills Read
 
 - `AGENTS.md` was read.
-- No project-specific skill is required: this is a frontend-only static UI task with no Clerk, Neon, or AI functionality.
+- No project-specific skill is required: this is a frontend-only static UI task with no authentication, Neon, or AI functionality.
 - Local Next.js 16 documentation was consulted for App Router layouts/pages, `Link` navigation, and Client Component requirements for reading the active pathname.
 
 ## Existing Code Inspected
@@ -23,13 +23,13 @@ Add a responsive static Friends page at `/chat/friends`, visually aligned with t
 - Update only `src/app/chat/_components/chat-shell.js` to reduce the sidebar nav items to Chats, Users, and Friends, remove the favorites area and all unsupported route links, add a bottom logout affordance, and use `usePathname()` for active state.
 - Keep navigation as Next.js `Link` components so `/chat`, `/chat/users`, and `/chat/friends` use client-side App Router navigation and work from both desktop and mobile sidebars.
 - Reuse the Users-page visual conventions but present existing friends with an Unfriend control, not Add Friend. No mutation is performed.
-- Logout is visual-only because no Clerk authentication is presently configured; it must not claim to terminate a session.
+- Logout is visual-only because no authentication is presently configured; it must not claim to terminate a session.
 
 ## Assumptions
 
 - “Similar to users page” means an analogous responsive heading, search/filter area, cards/rows, status information, and supporting rail where useful.
 - Friend data, online states, and row actions are static mock data in this UI phase.
-- “Logout is ok” requests a bottom logout control rather than a real sign-out flow; real logout must be connected to Clerk only when authentication is added.
+- “Logout is ok” requests a bottom logout control rather than a real sign-out flow; real logout must be connected only when the manual authentication system is added.
 
 ## Files Likely To Change
 
@@ -50,7 +50,7 @@ Add a responsive static Friends page at `/chat/friends`, visually aligned with t
 ## Security Requirements
 
 - Do not add custom authentication, password logic, API calls, backend routes, database changes, environment variables, or browser storage.
-- The Logout control must remain a visual UI affordance until connected through Clerk.
+- The Logout control must remain a visual UI affordance until connected to the manual authentication system.
 - All friend data and status values are static mock content only.
 
 ## Acceptance Criteria

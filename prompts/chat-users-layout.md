@@ -7,7 +7,7 @@ Build a polished, responsive static Chatify users-dashboard layout at `/chat/use
 ## Skills Read
 
 - `AGENTS.md` was read.
-- No project-specific skill is required: this is a frontend-only layout task with no Clerk, Neon, or AI functionality.
+- No project-specific skill is required: this is a frontend-only layout task with no authentication, Neon, or AI functionality.
 - Local Next.js 16 documentation was consulted for App Router route conventions and Server/Client Component boundaries.
 
 ## Existing Code Inspected
@@ -68,7 +68,7 @@ Build a polished, responsive static Chatify users-dashboard layout at `/chat/use
 - The Users navigation item is visibly selected.
 - The page includes user search, filters, filter chips, online/offline states, Add Friend actions, people recommendations, and an invite card.
 - The route is responsive, keyboard navigable, and has no unintended page-level horizontal scrolling.
-- No Express/backend, database, Clerk, Socket.IO, API, or environment-variable changes are made.
+- No Express/backend, database, authentication, Socket.IO, API, or environment-variable changes are made.
 - `npm run lint` and `npm run build` pass.
 
 ## Checks To Run

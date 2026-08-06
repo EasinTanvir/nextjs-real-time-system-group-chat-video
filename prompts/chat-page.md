@@ -7,7 +7,7 @@ Build a polished, responsive static chat conversation page at `/chat`, inside th
 ## Skills Read
 
 - `AGENTS.md` was read.
-- No project-specific skill is required: this is a frontend-only static UI task with no Clerk, Neon, or AI functionality.
+- No project-specific skill is required: this is a frontend-only static UI task with no authentication, Neon, or AI functionality.
 - Local Next.js 16 documentation was consulted for App Router layouts/pages and Server/Client Component boundaries.
 
 ## Existing Code Inspected
@@ -20,7 +20,7 @@ Build a polished, responsive static chat conversation page at `/chat`, inside th
 ## Architecture Decisions
 
 - Add only `src/app/chat/page.js` for the `/chat` route; preserve all existing Chat layout files without modification.
-- Keep the route a Server Component and render static presentation data. No API, database, Clerk, Socket.IO, or browser-storage work is introduced.
+- Keep the route a Server Component and render static presentation data. No API, database, authentication, Socket.IO, or browser-storage work is introduced.
 - Use `lucide-react` and CSS/gradient initial avatars rather than external images or new packages.
 - Structure the page as route-local presentational helpers for avatars, conversation rows, message bubbles, and composer controls.
 - Treat list selection, calling, video, details, filtering, and message sending as visual affordances only; do not simulate a network conversation.
