@@ -1,14 +1,26 @@
 # AGENTS.md
 
-You are a **principal-level full-stack engineer and AI implementation agent** working on **biasly**, a production-style AI-powered news analysis website.
+You are a **principal-level Full Stack Engineer and AI implementation agent** working on a **production-ready real-time chat application** built with **Next.js** and a dedicated **Node.js + Express + Socket.IO backend**.
 
-Your job is to understand the request, use the right project skills, create a clear implementation prompt, ask for approval, then implement.
+Your responsibility is to understand the user's request, inspect the existing project, use the correct project skills, create a clear implementation prompt, ask for approval, and then implement the feature.
+
+Always prioritize clean architecture, reusable components, scalability, and maintainability.
+
+---
 
 <!-- BEGIN:nextjs-agent-rules -->
 
 # This is NOT the Next.js you know
 
-This version has breaking changes â€” APIs, conventions, and file structure may all differ from your training data. Read the relevant guide in `node_modules/next/dist/docs/` before writing any code. Heed deprecation notices.
+This project uses the latest version of Next.js with the App Router.
+
+Next.js APIs, conventions, routing, Server Components, Client Components, caching behavior, and file structure may differ from your training data.
+
+Before implementing any Next.js feature, consult:
+
+node_modules/next/dist/docs/
+
+Follow the latest conventions and heed all deprecation warnings.
 
 <!-- END:nextjs-agent-rules -->
 
@@ -16,681 +28,812 @@ This version has breaking changes â€” APIs, conventions, and file structure
 
 # 1. Product
 
-biasly collects real news articles from configured sources, analyzes them with AI, stores them in Supabase, and displays reader-friendly sentiment and framing insights.
+This project is a production-style real-time chat application.
 
-Build only:
+The application consists of **two separate applications inside one repository**.
 
-- home page with news cards
-- news details page with full article analysis
-- Clerk authentication
-- Supabase persistence
-- Oxylabs scraping
-- Oxylabs Scheduler
-- AI article analysis
-- logs
-- pgvector similarity search for related articles
-- Vercel Cron for automatic scheduling
-- minimal responsive UI
+Frontend:
 
-## Do not overbuild.
+- Next.js App Router
+- TailwindCSS
+- shadcn/ui
+- Clerk Authentication
 
-# 2. Workflow
+Backend:
+
+- Node.js
+- Express
+- Socket.IO
+- PostgreSQL (Neon)
+
+The backend exists specifically for REST APIs, WebSocket communication, business logic, and database access.
+
+The frontend exists for rendering UI, authentication, routing, and consuming backend APIs.
+
+Build only the requested feature.
+
+Do not overbuild.
+
+Never implement unrelated functionality.
+
+---
+
+# 2. Core Features
+
+The application contains:
+
+- Landing Page
+- Login
+- Register
+- User Profile
+- Friend Request System
+- One-to-One Chat
+- Group Chat
+- Conversation List
+- Real-time Messaging
+- Online Presence
+- Responsive UI
+
+The primary workflow is:
+
+Users discover other users from the Users page.
+
+Users send friend requests.
+
+The receiver accepts the request.
+
+Only accepted friends can start private conversations.
+
+Users can also create groups and invite their existing friends.
+
+The Chat page displays both private conversations and group conversations in a single conversation list.
+
+Selecting any conversation navigates to:
+
+/chat/[conversationId]
+
+The selected conversation opens on the right side.
+
+Friend Requests and Groups are NOT separate pages.
+
+Everything related to chatting belongs inside the Chat experience.
+
+---
+
+# 3. Workflow
 
 For every implementation request:
 
-1. Read `AGENTS.md`.
-2. Read the skills explicitly mentioned by the user.
-3. Read clearly needed supporting skills from the approved skill list.
-4. Inspect relevant code.
-5. Ask a focused question only if the task has meaningful ambiguity.
-6. Create a detailed prompt file in `prompts/`.
-7. Ask: `I prepared the implementation prompt at prompts/<file-name>.md. Is this good to execute?`
-8. Implement only after user approval.
-9. Run available checks.
-10. Share exact steps to test or run the completed feature.
+1. Read AGENTS.md.
+2. Read every skill explicitly mentioned by the user.
+3. Read only the required supporting skills.
+4. Inspect the existing implementation.
+5. Reuse existing patterns whenever possible.
+6. Ask a focused question only when meaningful ambiguity exists.
+7. Create a detailed implementation prompt inside:
 
-Do not code before creating the prompt unless the user explicitly says to skip prompt creation.
+prompts/
+
+8. Save the prompt.
+
+9. Ask:
+
+"I prepared the implementation prompt at prompts/<feature>.md.
+Is this good to execute?"
+
+10. On approval re read approved prompt file in the prompts/ and implement it strictly. Wait for approval.
+
+11. Implement.
+
+12. Run available checks.
+
+13. Share exact testing steps.
+
+Never begin implementation before creating the prompt unless the user explicitly asks to skip prompt generation.
 
 ---
 
-# 3. Skills
+# 4. Skills
 
-Use only these skills:
+Use only these project skills.
 
-- `.agents/skills/clerk`
-- `.agents/skills/supabase`
-- `.agents/skills/oxylabs-web-scraper`
-- `.agents/skills/ai-sdk`
+.agents/skills/clerk
+
+.agents/skills/neon-postgres
+
+.agents/skills/ai-sdk
 
 Use them for:
 
-- `node_modules/next/dist/docs/`: Next.js, routing, server/client boundaries, API routes, UI patterns
-- `clerk`: authentication and protected routes
-- `supabase`: schema, migrations, queries, service role usage, dedupe, logs, pgvector
-- `oxylabs-web-scraper`: Oxylabs Web Scraper API, Scheduler, scheduled jobs, scraping behavior
-- `ai-sdk`: Vercel AI SDK and OpenAI provider usage, model calls, AI analysis output handling
+node_modules/next/dist/docs/
+
+Latest Next.js documentation
+
+clerk
+
+Authentication
+
+Middleware
+
+Protected Routes
+
+User Management
+
+neon-postgres
+
+Database
+
+Schema
+
+Relations
+
+Queries
+
+Transactions
+
+Indexes
+
+Migrations
+
+ai-sdk
+
+AI features requested by the user.
 
 Do not invent new skills.
 
-For Cheerio, Zod, Tailwind, and shadcn/ui, use existing project patterns, package docs, and `node_modules/next/dist/docs/`.
+For TailwindCSS, Zod, shadcn/ui, React Hook Form, Socket.IO, and Express, follow existing project conventions and package documentation.
 
 ---
 
-# 4. Prompt files
+# 5. Prompt Files
 
-Prompt files live in the `prompts/` directory. Use names like:
+Every implementation starts with a prompt.
 
-- `prompts/oxylabs-scraping.md`
-- `prompts/oxylabs-scheduler.md`
-- `prompts/ai-analysis.md`
-- `prompts/news-details-page-ui.md`
+Store prompts inside:
 
-Each prompt must include:
+prompts/
 
-- goal
-- skills read
-- existing code inspected
-- decisions or assumptions
-- files likely to change
-- implementation requirements
-- security requirements
-- acceptance criteria
-- checks to run
-- exact manual test steps expected after implementation
+Example names:
 
-For UI tasks, also include visual interpretation, layout, typography, spacing, colors, responsiveness, and pixel-perfect expectations.
+prompts/authentication.md
 
----
+prompts/chat-ui.md
 
-# 5. Architecture
+prompts/friend-request.md
 
-Keep these layers separate:
+prompts/socket-events.md
 
-- Website: pages, cards, details UI, auth UI
-- API: thin route handlers only
-- Database: Supabase reads/writes
-- Scraping: Oxylabs calls and Scheduler integration
-- Parsing: article link extraction, cleanup, article validation
-- AI: article analysis and output validation
-- Pipeline: scrape and analysis orchestration, log tracking
-- Vector: pgvector similarity queries and article embedding storage
+prompts/group-chat.md
 
-UI must display stored data only.
+prompts/create-group.md
 
-UI must not scrape, analyze, or mutate pipeline state.
+Each prompt must contain:
 
----
+Goal
 
-# 6. Tech stack
+Skills Read
 
-Use:
+Existing Code Inspected
 
-- Next.js
-- Clerk
-- Supabase
-- Oxylabs Web Scraper API
-- Oxylabs Scheduler
-- Cheerio
-- Vercel AI SDK
-- OpenAI provider
-- Zod
-- Tailwind CSS
-- shadcn/ui
-- pgvector (via Supabase Extensions)
-- Vercel Cron
+Architecture Decisions
 
-Do not use:
+Assumptions
 
-- Supabase Auth
-- local JSON app storage
-- a separate backend framework
+Files Likely To Change
+
+Implementation Plan
+
+Security Requirements
+
+Acceptance Criteria
+
+Checks To Run
+
+Manual Testing Steps
+
+UI tasks must additionally include:
+
+Visual Layout
+
+Typography
+
+Spacing
+
+Responsive Behavior
+
+Interaction States
+
+Accessibility
+
+Expected User Experience
+
+Never implement before creating the prompt unless instructed.
 
 ---
 
-# 7. Supabase source of truth
+# 6. Architecture
 
-Supabase is the source of truth for app data.
+The repository contains two applications.
 
-Core tables:
+Frontend
 
-- `sources`
-- `articles`
-- `article_analyses`
-- `logs`
-- `oxylabs_schedules`
-- `oxylabs_schedule_runs`
+Next.js
 
-Scraping must load active sources from the `sources` table.
+Backend
 
-Do not hardcode source URLs inside scraping logic or `AGENTS.md`.
+Node.js + Express
 
-Each source should store the fields needed by the scraper:
+Keep responsibilities separated.
 
-- name
-- homepage URL (listing_url)
-- parser strategy if needed
-- active status
-- optional logo URL
+Frontend Responsibilities
 
-Only active sources should be used for scraping and scheduling.
+Pages
 
-Each article should store:
+Components
 
-- source reference
-- original URL (unique, used for dedupe)
-- canonical URL
-- title
-- image URL (required before saving)
-- published date (required before saving)
-- raw article text
-- scraped timestamp
-- analyzed timestamp (null until analysis is saved)
+Routing
 
-Each article analysis should store:
+Authentication
 
-- article reference
-- neutral summary
-- sentiment score (âˆ’1 to 1) and sentiment label (positive / neutral / negative)
-- bias score (âˆ’1 to 1, derived as `(right_percentage âˆ’ left_percentage) / 100`)
-- bias label (left / center / right / mixed / unclear â€” see section 19)
-- left percentage, center percentage, right percentage (each 0â€“100, must sum to 100)
-- confidence (0 to 1)
-- framing notes
-- loaded terms
-- disclaimer
-- model name
+Forms
 
-The `embedding vector(1536)` column is added to `article_analyses` in section 20 after pgvector is enabled. Do not include it in the initial schema.
+UI
 
-When any of these fields are added or changed, update `supabase/schema.sql`, `lib/supabase/types.ts`, and run the corresponding ALTER SQL in Supabase Dashboard â†’ SQL Editor before testing.
+API Calls
 
-- name
-- homepage URL (listing_url)
-- parser strategy if needed
-- active status
-- optional logo URL
+Socket Client
 
-# 8. Scraping source selection
+Backend Responsibilities
 
-Before implementing or running scraping behavior, inspect the active sources stored in Supabase and show the user the available source names.
+REST APIs
 
-Ask the user which sources to scrape and how many articles per source.
+Business Logic
 
-If the user already says something like "scrape 3 sources and 5 per source," use that instruction and fetch the matching active sources from Supabase.
+Database
 
-If the user does not choose sources or limits, default to all active sources and the default per-source limit.
+Socket.IO
 
-Do not invent source URLs.
+Validation
 
-Do not scrape source sub-endpoints that are not stored in Supabase.
+Permissions
+
+Real-time Events
+
+Never place backend logic inside the Next.js application.
+
+Never implement Socket.IO inside Next.js.
+
+Socket.IO belongs only inside the Express backend.
+
+Business logic belongs only inside the backend.
+
+Frontend should consume backend APIs.
 
 ---
 
-# 9. Correct scraping model
+# 7. Project Structure
 
-Source URLs from Supabase are **homepage entry pages only**.
+Repository
 
-## Scrape-to-insert pipeline
+/
+src/
+app/
+components/
+lib/
+hooks/
+providers/
+services/
+utils/
 
-This is the canonical scrape-to-insert flow. Both manual scraping (section 16) and scheduler processing (section 18) run these exact steps and differ only in how they are triggered and where the homepage HTML comes from:
+    server/
+        src/
+            config/
+            controllers/
+            middleware/
+            routes/
+            services/
+            socket/
+            db/
+            utils/
+            app.js
+            index.js
 
-1. Load the selected active sources from Supabase (all active sources by default).
-2. Obtain each source's homepage HTML â€” manual scraping fetches the stored homepage URL live through Oxylabs; scheduler processing uses completed Oxylabs job results (section 18). Never crawl into sublinks to find more listing pages.
-3. Extract candidate links from visible homepage story cards only (section 11).
-4. Reject anything on the **non-article reject list** before detail scraping.
-5. Normalize and dedupe candidate URLs, then skip URLs already stored in Supabase using the **URL existence check** below.
-6. Scrape only article detail pages that pass the candidate URL check (section 12).
-7. Validate and clean each detail page (section 13); it must pass the **article content gate** below.
-8. Insert only valid articles, append-only (section 10). Never save a source homepage, listing, or category page as an article.
-9. Emit **run logging** (below) during the run and a final summary object.
+Do not move code between applications.
 
-## Shared pipeline rules
+Frontend code remains inside:
 
-Named rules reused by sections 16 and 18 â€” defined once here:
+src/
 
-- **URL existence check** â€” when checking which candidate URLs already exist in Supabase, query in small chunks and never pass more than 15 URLs to a single `.in()` filter.
-- **Article content gate** â€” save an article only if it has meaningful body content, an image URL, and a published date. Full accept/reject criteria and `raw_text` cleanup live in section 13.
-- **Run logging** â€” log neat server-side console messages during the run (scrape started, selected sources, per-source start, homepage fetched, candidate links found, candidates rejected before detail scrape, duplicates skipped, detail pages scraped, articles inserted, articles rejected after validation, source-level errors, scrape completed or failed) and, at the end, a summary object with: status, sources checked, candidates found, candidates rejected, duplicates skipped, detail pages scraped, articles inserted, articles rejected, articles failed, total duration, and rejection reasons grouped by count.
+Backend code remains inside:
 
-## Non-article reject list
-
-This is the canonical list of page types that are never valid articles. Other sections refer to it as the **non-article reject list** instead of repeating it:
-
-- category and section pages
-- topic and tag pages
-- author pages
-- search pages
-- navigation, menu, and footer links
-- show, program, and podcast pages
-- live pages
-- game pages
-- product, review, and shopping pages
-- corporate and support pages
-- newsletter and subscription pages
-- video-only pages unless the page also has full article text
-
-When this list changes, update it here only.
+server/src/
 
 ---
 
-# 10. Article storage rules
+# 8. Tech Stack
 
-Articles must be append-only during scraping.
+Frontend
 
-Never delete, replace, or reset the article list during a scrape.
+Next.js (Javascript)
 
-Use original URL and canonical URL for dedupe.
+React
 
-Do not insert duplicate articles.
+TailwindCSS
 
-Do not store invalid, generic, non-article, listing, category, topic, podcast, program, corporate, support, product, shopping, game, live feed, or low-quality pages as articles.
+shadcn/ui
 
----
+React Hook Form
 
-# 11. Homepage article link extraction
+Zod
 
-When scraping a source homepage, do not collect every link.
+TanStack Query
 
-Extract only visible story/article card links from the homepage content.
+Socket.IO Client
 
-Ignore everything on the **non-article reject list** (section 9) â€” navigation, menus, footers, section/category/topic links, show, game, live, newsletter, corporate, support, product/review, and subscription pages.
+Backend
 
-Before detail scraping, each candidate URL must pass a source-specific article URL check.
+Node.js
 
-Examples:
+Express
 
-- Reuters category pages like `/world/africa` are not article URLs.
-- NPR section pages like `/sections/politics` are not article URLs.
-- Fox show, game, and live pages are not normal article URLs.
-- BBC sport, category, and live pages are not normal news article URLs.
-- Guardian section pages like `/us/environment` or `/thefilter-us` are not article URLs.
+Socket.IO
 
-Use source-specific parser strategy when generic homepage extraction is not enough.
+Neon PostgreSQL
 
-Use only homepage URLs already stored in Supabase.
+Drizzle ORM
 
----
+JWT verification using Clerk
 
-# 12. Candidate URL filtering
+Authentication
 
-Filter candidate URLs before scraping article detail pages.
+Clerk
 
-A candidate should be kept only when it looks like a real article detail URL for that source.
+Do not build a custom authentication system.
 
-Prefer URLs with:
+Do not implement password hashing.
 
-- article-specific IDs
-- date-based article paths
-- long story slugs
-- source-specific article patterns
-- clear news/story path structure
+Do not store passwords.
 
-Reject candidate URLs that look like homepage URLs or anything on the **non-article reject list** (section 9).
-
-If the candidate URL check is uncertain, use the stricter choice and reject before detail scraping.
+Always use Clerk.
 
 ---
 
-# 13. Article validation and cleanup
+# 9. Pages
 
-After scraping an article detail page, validate it before saving.
+Allowed routes
 
-Accept only if the page has:
+/
 
-- article-specific URL
-- article-specific title
-- one clear article subject
-- meaningful article body
-- source reference
-- published date
-- image URL
+Landing Page
 
-Reject if:
+/login
 
-- published date is missing
-- image URL is missing
-- title is generic
-- title is a category, section, show, program, podcast, product, game, live, or corporate page name
-- body is mostly unrelated headlines
-- body is mostly captions, links, sponsor text, bios, navigation, styles, scripts, ads, or CSS
-- canonical URL points to a listing/category/program/product page
-- page has no clear article-specific subject
+/register
 
-Do not reject a page only because paragraph extraction returned one paragraph.
+/users
 
-Body quality can pass by either:
+/profile
 
-- 3 or more meaningful paragraphs, or
-- 900 or more meaningful characters after cleanup with a clear article title, image URL, published date, and article-specific URL
+/chat
 
-If text extraction returns one large paragraph, split it using article DOM blocks, sentence boundaries, or source-specific selectors before validation.
+/chat/[conversationId]
 
-Before saving `raw_text`, remove scripts, styles, ad placeholders, newsletter blocks, subscription blocks, related content blocks, most viewed blocks, load more text, social share text, repeated navigation labels, inline JavaScript errors, and CSS class dumps.
+Do not create additional pages unless explicitly requested.
 
-Saved article text should read like one article, not a copied webpage dump.
+Friend Requests belong inside:
+
+Notifications
+
+Modal
+
+Drawer
+
+Popover
+
+Group creation belongs inside a modal.
+
+Conversation settings belong inside the Chat page.
 
 ---
 
-# 14. API route method rules
+# 10. Chat Flow
 
-Use consistent API methods.
+Users page
 
-Use `POST` for actions that start or mutate work:
+Search users
 
-- `POST /api/scrape`
-- `POST /api/analyze`
-- `POST /api/oxylabs/schedules`
-- `POST /api/oxylabs/scheduled-results/process`
+View profile
 
-Use `GET` only for read/status routes:
+Send friend request
 
-- `GET /api/sources`
-- `GET /api/logs`
-- `GET /api/oxylabs/schedules`
-- `GET /api/oxylabs/runs`
+Accept requests
 
-One exception â€” the Vercel Cron route uses `GET` because Vercel Cron always sends GET requests:
+Reject requests
 
-- `GET /api/cron/pipeline` â€” internal only, protected by `CRON_SECRET`, not callable by browsers or users
+Chat page
 
-Do not switch scraping or AI analysis between `GET` and `POST`.
+Conversation list
 
-Scraping and AI analysis must be triggered with `POST` for manual calls. The Vercel Cron route is the only GET exception and must be protected by `CRON_SECRET`.
+Private conversations
 
----
+Group conversations
 
-# 15. Admin secret rule
+Search conversations
 
-All action routes that start or mutate work must require a shared admin secret sent as the `x-biasly-admin-secret` request header. Store the value in the `BIASLY_ADMIN_SECRET` environment variable.
+Unread count
 
-Do not put the secret in the URL query string.
+Last message preview
 
-Do not expose the secret to browser code.
+Selecting a conversation navigates to:
 
-Reject missing or invalid secrets with `401`.
+/chat/[conversationId]
 
----
+The conversation page contains:
 
-# 16. Manual scraping behavior and logs
+Header
 
-Manual scraping runs the **scrape-to-insert pipeline** (section 9) on demand, fetching each source homepage live through Oxylabs.
+Messages
 
-Manual-specific rules:
+Message Input
 
-- Trigger with `POST /api/scrape` and require the `x-biasly-admin-secret` header (section 15).
-- Select sources per section 8: use the user's choice (e.g. "3 sources, 5 per source"); otherwise default to all active sources and up to 5 valid articles per source.
-- It is better to insert fewer good articles than to insert bad ones.
-- Return the same **run logging** summary object (section 9) in the API response.
-- Do not rely on a run-id polling test format for basic manual testing.
+Typing Indicator
+
+Seen Status
+
+Online Status
+
+Responsive Layout
 
 ---
 
-# 17. Testing output after implementation
+# 11. Database
 
-After completing scraping, scheduler, or AI analysis work, always share exact test steps.
+Database: Neon PostgreSQL
 
-For API features, share the exact curl commands needed to hit each endpoint, including the correct method, headers, and JSON body. Always include the `x-biasly-admin-secret` header where required.
+Primary entities
 
-Tell the user to watch the terminal running the Next.js dev server because scrape and analysis progress is logged there.
+Users
 
-Do not overcomplicate manual test commands unless the implementation truly needs a status route.
+Friend Requests
+
+Friendships
+
+Conversations
+
+Conversation Members
+
+Messages
+
+Groups
+
+Do not duplicate user information.
+
+Normalize relationships.
+
+Use foreign keys.
+
+Prefer proper indexing.
+
+Keep schemas scalable.
 
 ---
 
-# 18. Oxylabs Scheduler
+# 12. Authentication
 
-Use Oxylabs Scheduler to run hourly scraping for active source homepages stored in Supabase.
+Authentication is handled exclusively by Clerk.
 
-Scheduler should scrape source homepages only.
+Frontend Environment Variables
 
-## Oxylabs Scheduler API
+NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY
 
-Before implementing Oxylabs Scheduler, always fetch the current API documentation from `https://developers.oxylabs.io/products/web-scraper-api/features/scheduler`. Do not assume endpoint paths, request body fields, or response field names from memory â€” consult the live docs first.
+CLERK_SECRET_KEY
 
-## Large integer precision â€” critical
+Backend
 
-Oxylabs `schedule_id` and job `id` values are large 64-bit integers that exceed JavaScript's `Number.MAX_SAFE_INTEGER`. Parsing them with `JSON.parse` silently corrupts the last digits, producing a wrong ID that Oxylabs will not recognise.
+The backend must verify Clerk JWT tokens before accessing protected APIs.
 
-Always read these IDs from the raw HTTP response text before any `JSON.parse` call â€” use string extraction or regex on the raw text to capture the exact digit sequence. Never convert a parsed JavaScript number back to a string; precision is already lost at parse time.
+Never trust client-provided user IDs.
 
-## Use /runs not /jobs for processing
+Always resolve the authenticated user from the verified Clerk token.
 
-`GET /schedules/{id}/jobs` returns a flat array of job IDs with no status. There is no way to know if a job is `done`, `pending`, or `faulted`.
+Never build custom login endpoints.
 
-`GET /schedules/{id}/runs` returns each run with per-job `result_status`. Always use `/runs` and filter to `result_status === 'done'` before fetching results. Do not attempt to fetch results for `pending` or `faulted` jobs.
+Never store passwords.
 
-## Orphan schedule deactivation
-
-Each call to the sync route that creates a new schedule leaves behind old schedules on Oxylabs if DB rows were deleted and re-created. These orphaned schedules still run hourly and count against the Oxylabs bill.
-
-The sync route must:
-
-1. After creating any new schedules, call `GET /v1/schedules` to list all Oxylabs schedule IDs.
-2. Compare against the IDs currently stored in `oxylabs_schedules`.
-3. Deactivate any Oxylabs schedule not present in the DB using `PUT /v1/schedules/{id}/state`.
-
-## Two separate one-time setups
-
-Creating Oxylabs schedules and configuring Vercel Cron are two independent one-time steps. Neither one triggers the other.
-
-- `POST /api/oxylabs/schedules` â€” tells Oxylabs what to scrape hourly. Done once per source set.
-- Vercel Cron config â€” tells Vercel to call `/api/cron/pipeline` at :15 past every hour. Done once via `vercel.json`.
-
-Both must be completed for the pipeline to be fully automatic. Until Vercel Cron is configured, the process route must be called manually.
-
-Articles only appear on the homepage after `analyzed_at` is set. Until analysis runs, use `POST /api/analyze` manually after scraping.
-
-Process scheduled results by running the **scrape-to-insert pipeline** (section 9), with these scheduler differences:
-
-- Create or update Oxylabs schedules from active source homepages before processing.
-- The homepage HTML comes from completed Oxylabs job results â€” fetch via `/runs`, use only `result_status === 'done'` (see above), and parse that HTML instead of doing a live homepage fetch.
-- Do not save raw scheduled homepage results as articles.
-- Do not duplicate pipeline logic inside Scheduler; reuse the same validation, cleanup, dedupe, **URL existence check**, and **run logging** as manual scraping (section 9).
-
-## Automatic hourly pipeline
-
-Scheduled result processing and AI analysis must run automatically after every Oxylabs run.
-
-Do not require manual intervention after schedules are created.
-
-The automatic pipeline flow is:
-
-1. Oxylabs Scheduler runs its jobs at the top of every hour.
-2. A Vercel Cron Job fires 15 minutes later to give Oxylabs time to finish.
-3. The cron triggers `/api/cron/pipeline`, which runs both steps in sequence.
-4. Step one: process scheduled results â€” fetch completed Oxylabs job HTML, extract candidate links, reject non-article URLs, dedupe, scrape article detail pages, validate, and insert valid articles.
-5. Step two: immediately run AI analysis on all newly inserted articles that are still pending analysis.
-6. If step one fails, step two must still run â€” there may be pre-existing unanalyzed articles.
-7. Log progress and completion for both steps.
-
-The cron route is internal only and must not be callable by browsers or users.
-
-Protect the cron route using the `CRON_SECRET` environment variable, which Vercel injects automatically on every cron request. Reject requests with a missing or wrong value with `401`.
-
-In local development, skip the secret check so the route can be tested manually.
-
-Do not use `BIASLY_ADMIN_SECRET` to protect the cron route. Do not add `CRON_SECRET` to `.env.local`.
-
-When implementing Oxylabs Scheduler, always deliver all parts together:
-
-- Sync schedules route â€” creates one Oxylabs schedule per active source
-- List schedules route â€” reads stored schedule rows
-- Manual process route â€” allows on-demand processing
-- Vercel Cron config â€” registers the automatic hourly trigger
-- Cron pipeline route â€” chains scheduled result processing then AI analysis
-
-Scheduler processing must use the same validation, cleanup, dedupe, and console summary logging as manual scraping.
-
-# 19. AI analysis and UI framing
-
-AI analysis must process valid articles missing analysis, detected by the **pending-analysis check** in the Required behavior list below â€” based on the actual state of `article_analyses`, not `analyzed_at` alone.
-
-AI analysis must be triggered with `POST /api/analyze`.
-
-The request must include the `x-biasly-admin-secret` header.
-
-Default behavior should process all pending valid articles.
-
-If the user gives a limit or selected article IDs, respect that request.
-
-Do not analyze only 10 total articles unless the user explicitly asks for 10.
-
-Do not hardcode analysis to:
-
-- latest scrape only
-- specific article IDs
-- specific sources
-- a fixed one-time batch
-
-Batching is allowed only to avoid timeouts.
-
-Each analysis must include and save to `article_analyses`:
-
-- neutral summary â†’ `summary`
-- sentiment score â†’ `sentiment_score`, sentiment label â†’ `sentiment_label`
-- AI-estimated political framing label â†’ `bias_label`
-- left percentage â†’ `left_percentage`
-- center percentage â†’ `center_percentage`
-- right percentage â†’ `right_percentage`
-- derived bias score â†’ `bias_score` (computed as `(right_percentage âˆ’ left_percentage) / 100`)
-- confidence â†’ `confidence`
-- framing notes â†’ `framing_notes`
-- loaded terms â†’ `loaded_terms`
-- disclaimer â†’ `disclaimer`
-- model name â†’ `model`
-
-Embedding generation is added in section 20 after pgvector is enabled.
-
-Political framing must be shown as **AI-estimated**, not objective truth.
-
-Framing output rules:
-
-- `leftPercentage`, `centerPercentage`, and `rightPercentage` must be numbers from 0 to 100.
-- The three percentages must add up to 100.
-- `politicalFramingLabel` must be one of: `left`, `center`, `right`, `mixed`, or `unclear`.
-- The label should match the strongest percentage unless confidence is low or percentages are close.
-- If evidence is weak, use `unclear` and keep confidence low.
-- Use article text evidence only. Do not infer based on source name alone.
-- Validate AI output with Zod or equivalent before saving.
-- If output is invalid, retry once or mark the article as failed without saving bad analysis.
-
-Required behavior:
-
-1. **Pending-analysis check** â€” detect pending articles by LEFT JOINing `articles` to `article_analyses`. Never rely on `analyzed_at IS NULL` alone â€” `analyzed_at` can be set while the `article_analyses` row is absent (e.g. after manual deletion). An article is pending when no `article_analyses` row exists for it.
-2. Process in configurable batches.
-3. Continue until no pending articles remain for full analysis runs.
-4. Validate AI output before saving.
-5. Save analysis only for valid articles.
-6. Mark `analyzed_at` only after valid analysis is saved.
-7. Log analyzed, skipped, failed counts per batch and in the final summary.
-8. Log neat console progress during the run.
-9. Log a final summary object when complete.
-
-Article cards must show:
-
-- article title
-- source
-- image
-- published date
-- sentiment label
-- AI-estimated framing label
-- left / center / right percentages
-- confidence when available
-
-News details page must show the full analysis, including summary, sentiment, framing percentages, confidence, framing notes, loaded terms, and disclaimer.
-
-Framing output rules:
-
-# 20. pgvector and related articles
-
-This section is implemented after AI analysis is working (section 19). pgvector upgrades the analysis pipeline to also generate embeddings and powers a Related Articles feature on the news details page.
-
-Enable pgvector in Supabase Dashboard under Database Extensions. Then add an `embedding vector(1536)` column to `article_analyses` and create an IVFFlat cosine index on it via the SQL Editor. Update `supabase/schema.sql`, `lib/supabase/types.ts`, and run the ALTER SQL before testing.
-
-Update the `/api/analyze` route to also call OpenAI text-embedding-3-small for each article alongside the existing analysis call and save the result to `article_analyses.embedding`. Update `analyzed_at` only after both analysis and embedding are saved. Because pending detection uses LEFT JOIN logic (see section 19), articles whose `article_analyses` row exists but has `embedding IS NULL` will automatically be picked up for embedding backfill on the next run without re-running the full analysis.
-
-To find related articles, query `article_analyses` joined to `articles` and `sources`, filter to rows where the embedding is not null and the article is analyzed and is not the current article, then order by cosine distance (`<=>`) to the current article's embedding and limit to 5 results.
-
-Add a `getRelatedArticles(articleId, embedding)` query function to `lib/supabase/queries/articles.ts` using the service role client.
-
-Update the news details page to show a Related Articles section with up to 5 similar articles by cosine similarity. Do not show the section when the current article has no embedding.
+Never replace Clerk authentication.
 
 ---
 
-# 21. Security, code standards, and final rule
+# 13. Environment Variables
 
-Never expose to browser code:
+Frontend
 
-- Supabase service role key
-- Oxylabs credentials
-- OpenAI credentials
-- scheduler/admin secrets
+NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY
 
-Never run from browser code:
+CLERK_SECRET_KEY
 
-- Oxylabs calls
-- OpenAI/model calls
-- scraping
-- analysis
-- scheduler processing
+Backend
 
-## Environment variables
+DATABASE_URL
 
-Canonical list lives in `.env.example`. Only `NEXT_PUBLIC_*` values may reach browser code; everything else is server-only. `CRON_SECRET` is injected by Vercel and must not be added to `.env.local`.
+Only NEXT_PUBLIC variables may be exposed to browser code.
 
-| Variable                                                                      | Purpose                                                                                 | Exposure        |
-| ----------------------------------------------------------------------------- | --------------------------------------------------------------------------------------- | --------------- |
-| `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY`                                           | Clerk publishable key                                                                   | client + server |
-| `CLERK_SECRET_KEY`                                                            | Clerk server-side key                                                                   | server only     |
-| `NEXT_PUBLIC_CLERK_SIGN_IN_URL` / `_SIGN_UP_URL` / `_*_FALLBACK_REDIRECT_URL` | Clerk auth route config                                                                 | client + server |
-| `NEXT_PUBLIC_SUPABASE_URL`                                                    | Supabase project URL                                                                    | client + server |
-| `NEXT_PUBLIC_SUPABASE_ANON_KEY`                                               | Supabase anon key                                                                       | client + server |
-| `SUPABASE_SERVICE_ROLE_KEY`                                                   | Service-role DB access for writes and pipeline reads                                    | server only     |
-| `OXY_WSA_USERNAME` / `OXY_WSA_PASSWORD`                                       | Oxylabs Web Scraper API + Scheduler auth                                                | server only     |
-| `OPENAI_API_KEY`                                                              | AI analysis and `text-embedding-3-small`                                                | server only     |
-| `BIASLY_ADMIN_SECRET`                                                         | Shared secret for `x-biasly-admin-secret` on action routes (section 15)                 | server only     |
-| `ANALYSIS_BATCH_SIZE`                                                         | Optional; articles analyzed per batch (default 5)                                       | server only     |
-| `CRON_SECRET`                                                                 | Protects `GET /api/cron/pipeline`; injected by Vercel, not in `.env.local` (section 18) | server only     |
-
-Keep this table and `.env.example` in sync when variables change.
-
-Use TypeScript.
-
-Prefer small functions, explicit types, centralized limits, server-only modules, typed pipeline results, and safe error handling.
-
-Avoid `any`, unrelated refactors, over-engineering, long route handlers, mixed UI/business logic, and unrequested features.
-
-## Supabase joined table filter gotcha
-
-Do not use `.eq('foreignTable.column', value)` to filter on a joined table in supabase-js. This generates broken PostgREST SQL and causes runtime errors.
-
-Instead, fetch the joined data without a filter and apply the condition in JavaScript after the query returns. For Supabase query patterns, refer to `.agents/skills/supabase/SKILL.md`.
-
-When in doubt:
-
-1. Keep it small.
-2. Use the relevant skill.
-3. Preserve server/client boundaries.
-4. Ask a focused question if needed.
-5. Save a prompt before coding.
-6. Ask if it is good to execute.
-7. Implement after confirmation.
-8. Run available checks.
-9. Share exact test steps.
+Everything else remains server-only.
 
 ---
 
-# 22. Commands and checks
+# 14. API Architecture
 
-"Run available checks" (sections 2 and 21) means running these from the project root and reporting the results:
+The backend is the single source of truth for all business logic.
 
-- `npm run typecheck` â€” TypeScript, no emit (`tsc --noEmit`)
-- `npm run lint` â€” ESLint (`eslint`)
-- `npm run build` â€” Next.js production build, only when the change could affect the build
+All REST APIs belong inside the Express backend.
 
-Development and runtime:
+Do not create API routes inside Next.js unless the user explicitly requests them.
 
-- `npm run dev` â€” start the Next.js dev server; watch its terminal for scrape and analysis logs (section 17)
-- `npm run start` â€” run the production build locally after `npm run build`
+API responsibilities include:
 
-After implementation, run `typecheck` and `lint` at minimum. Add `build` when routes, config, or server modules changed. Report the exact command output; do not claim a check passed without running it.
+- User Management
+- Friend Requests
+- Conversations
+- Groups
+- Messages
+- Search
+- Profile
+- Notifications
+
+Route handlers should remain thin.
+
+Controllers should only:
+
+- Validate requests
+- Call services
+- Return responses
+
+Business logic belongs inside Services.
+
+Database access belongs inside Services or Repositories.
+
+Never write database queries directly inside route handlers.
+
+---
+
+# 15. Socket.IO Architecture
+
+Socket.IO belongs only inside the backend.
+
+Never initialize Socket.IO inside Next.js.
+
+Socket responsibilities include:
+
+- Connection
+- Authentication
+- Joining Rooms
+- Leaving Rooms
+- Sending Messages
+- Receiving Messages
+- Online Presence
+- Typing Indicators
+- Message Read Status
+- Group Events
+- Notifications
+
+Organize socket code like:
+
+server/src/socket/
+
+    index.js
+
+    handlers/
+
+    events/
+
+    rooms.js
+
+    middleware/
+
+Keep every socket event inside its own handler whenever possible.
+
+Avoid large socket files.
+
+---
+
+# 16. Real-Time Rules
+
+Real-time updates should include:
+
+- New Message
+- Message Edited (if implemented)
+- Message Deleted (if implemented)
+- Typing Started
+- Typing Stopped
+- User Online
+- User Offline
+- Friend Request Received
+- Friend Request Accepted
+- Friend Request Rejected
+- New Group Created
+- Member Added
+- Member Removed
+
+Never refresh the page to update chat.
+
+Everything should update using Socket.IO.
+
+---
+
+# 21. Database Rules
+
+Database changes must be normalized.
+
+Prefer relations over duplicated data.
+
+Every table should have:
+
+- Primary Key
+- Created At
+- Updated At
+
+Use foreign keys.
+
+Use indexes for:
+
+- User lookup
+- Conversation lookup
+- Friend lookup
+- Message lookup
+
+Avoid unnecessary joins when possible.
+
+Keep queries optimized.
+
+---
+
+# 22. Security
+
+Never expose:
+
+- DATABASE_URL
+- Clerk Secret Key
+- Server Tokens
+- JWT Secrets
+- Internal APIs
+
+Never trust:
+
+- Client IDs
+- Client Roles
+- Client Permissions
+
+Always verify authentication inside the backend.
+
+Validate every request.
+
+Validate every input.
+
+Never expose internal database structure.
+
+---
+
+# 23. Error Handling
+
+Every endpoint should return meaningful errors.
+
+Use consistent response structures.
+
+Example:
+
+Success
+
+{
+"success": true,
+"data": {}
+}
+
+Failure
+
+{
+"success": false,
+"message": "Conversation not found."
+}
+
+Do not expose stack traces.
+
+Log server errors.
+
+Return user-friendly messages.
+
+---
+
+# 25. Commands and Checks
+
+Frontend
+
+Development
+
+npm run dev
+
+Production
+
+npm run build
+
+npm run start
+
+Backend
+
+cd server
+
+npm run dev
+
+npm run build
+
+Run available checks after implementation.
+
+Always run:
+
+npm run lint
+
+Run build whenever routes, configuration, middleware, authentication, or server modules change.
+
+Never claim a command passed unless it was actually executed.
+
+---
+
+# 26. Final Implementation Rules
+
+Before implementing any feature:
+
+1. Read AGENTS.md.
+
+2. Read every required skill.
+
+3. Inspect the existing implementation.
+
+4. Reuse existing code whenever possible.
+
+5. Keep frontend and backend responsibilities separated.
+
+6. Keep components reusable.
+
+7. Keep APIs thin.
+
+8. Keep business logic inside services.
+
+9. Keep Socket.IO inside the backend.
+
+10. Preserve the existing project architecture.
+
+11. Create a detailed prompt inside:
+
+prompts/
+
+12. Ask for approval before implementation unless the user explicitly asks to skip prompt creation.
+
+13. Implement only the requested feature.
+
+14. Run available checks.
+
+15. Share exact testing steps.
+
+---
+
+# 27. Core Development Principles
+
+Always prioritize:
+
+- Simplicity
+- Scalability
+- Readability
+- Maintainability
+- Performance
+- Security
+- Reusability
+- Responsive Design
+- Consistent Architecture
+
+Never over-engineer.
+
+Never implement unrelated features.
+
+Never perform unnecessary refactoring.
+
+Build production-quality code that another senior engineer can easily understand and maintain.
