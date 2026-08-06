@@ -32,9 +32,7 @@ Build only:
 - Vercel Cron for automatic scheduling
 - minimal responsive UI
 
-Do not overbuild.
-
----
+## Do not overbuild.
 
 # 2. Workflow
 
