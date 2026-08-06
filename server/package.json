@@ -1,9 +1,12 @@
 {
   "name": "server",
   "version": "1.0.0",
-  "main": "index.js",
+  "main": "src/index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "db:generate": "drizzle-kit generate",
+    "db:migrate": "drizzle-kit migrate",
+    "db:check": "drizzle-kit check"
   },
   "keywords": [],
   "author": "",
@@ -11,7 +14,13 @@
   "description": "",
   "dependencies": {
     "cors": "^2.8.6",
+    "dotenv": "^17.4.2",
+    "drizzle-orm": "^0.45.2",
     "express": "^5.2.1",
-    "nodemon": "^3.1.14"
+    "nodemon": "^3.1.14",
+    "pg": "^8.22.0"
+  },
+  "devDependencies": {
+    "drizzle-kit": "^0.31.10"
   }
 }
