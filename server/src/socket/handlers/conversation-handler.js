@@ -1,11 +1,15 @@
-const { EVENTS } = require('../events');
-const { conversationRoom } = require('../rooms');
-const { requireConversation, requireMember } = require('../../services/conversation-service');
-const { db } = require('../../db/client');
-const { uuid } = require('../../utils/validation');
-const { registerEvent } = require('./utils');
+const { EVENTS } = require("../events");
+const { conversationRoom } = require("../rooms");
+const {
+  requireConversation,
+  requireMember,
+} = require("../../services/conversation-service");
+const { db } = require("../../db/client");
+const { uuid } = require("../../utils/validation");
+const { registerEvent } = require("./utils");
 
-const conversationIdFrom = (payload) => uuid(payload?.conversationId, 'conversationId');
+const conversationIdFrom = (payload) =>
+  uuid(payload?.conversationId, "conversationId");
 const authorizeMember = async (userId, conversationId) => {
   await requireConversation(db, conversationId);
   await requireMember(db, conversationId, userId);
@@ -17,7 +21,9 @@ const registerConversationHandlers = (io, socket) => {
     await authorizeMember(socket.data.userId, conversationId);
     const room = conversationRoom(conversationId);
     await socket.join(room);
-    socket.to(room).emit(EVENTS.USER_ONLINE, { conversationId, userId: socket.data.userId });
+    socket
+      .to(room)
+      .emit(EVENTS.USER_ONLINE, { conversationId, userId: socket.data.userId });
     return { conversationId };
   });
 
