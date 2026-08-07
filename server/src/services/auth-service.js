@@ -30,7 +30,7 @@ const register = async ({ email, username, displayName, password }) =>
     const passwordHash = await bcrypt.hash(password, 12);
     const [user] = await tx
       .insert(users)
-      .values({ email, username, displayName, passwordHash })
+      .values({ email, username, displayName, password: passwordHash })
       .returning();
     await tx.insert(userSettings).values({ userId: user.id });
     return authResult(user);
@@ -39,7 +39,7 @@ const login = async ({ email, password }) => {
   const user = (
     await db.select().from(users).where(ilike(users.email, email)).limit(1)
   )[0];
-  if (!user || !(await bcrypt.compare(password, user.passwordHash)))
+  if (!user || !(await bcrypt.compare(password, user.password)))
     throw credentialError();
   return authResult(user);
 };
