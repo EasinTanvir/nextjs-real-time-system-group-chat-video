@@ -29,6 +29,13 @@
       "when": 1786122476730,
       "tag": "0003_living_frank_castle",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1786123757698,
+      "tag": "0004_whole_white_tiger",
+      "breakpoints": true
     }
   ]
 }
