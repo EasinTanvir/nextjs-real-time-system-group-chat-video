@@ -1,4 +1,7 @@
-const service = require("../services/auth-service");
+const {
+  register: registerService,
+  login: loginService,
+} = require("../services/auth-service");
 const { asyncHandler } = require("../utils/async-handler");
 const { success } = require("../utils/response");
 const { AppError } = require("../utils/app-error");
@@ -19,7 +22,7 @@ const password = (value) => {
 
 const register = asyncHandler(async (req, res) => {
   const { username } = req.body;
-  const result = await service.register({
+  const result = await registerService({
     email: email(req.body.email),
     username,
     password: password(req.body.password),
@@ -30,7 +33,7 @@ const register = asyncHandler(async (req, res) => {
 const login = asyncHandler(async (req, res) =>
   success(
     res,
-    await service.login({
+    await loginService({
       email: email(req.body.email),
       password: password(req.body.password),
     }),

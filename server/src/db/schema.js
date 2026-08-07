@@ -42,7 +42,8 @@ const users = pgTable(
     id: uuid("id").defaultRandom().primaryKey(),
     email: text("email").notNull().unique(),
     username: text("username").notNull(),
-    password: text("password").notNull(),
+    // nullable now — Google-only users won't have one
+    password: text("password"),
     avatarUrl: text("avatar_url"),
     lastSeenAt: timestamp("last_seen_at", { withTimezone: true }),
     createdAt: timestamp("created_at", { withTimezone: true })
@@ -53,6 +54,39 @@ const users = pgTable(
       .notNull(),
   },
   (table) => [uniqueIndex("users_email_unique").on(sql`lower(${table.email})`)],
+);
+
+// provider enum — add more values later (github, facebook, etc.) without touching users table
+const authProviderEnum = pgEnum("auth_provider", ["local", "google"]);
+
+const accounts = pgTable(
+  "accounts",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    userId: uuid("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    provider: authProviderEnum("provider").notNull(),
+    providerAccountId: text("provider_account_id").notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .defaultNow()
+      .notNull(),
+    updatedAt: timestamp("updated_at", { withTimezone: true })
+      .defaultNow()
+      .notNull(),
+  },
+  (table) => [
+    // one row per (provider, providerAccountId) — prevents duplicate linking
+    uniqueIndex("accounts_provider_account_unique").on(
+      table.provider,
+      table.providerAccountId,
+    ),
+    // a user can only link a given provider once (e.g. can't have 2 google accounts linked)
+    uniqueIndex("accounts_user_provider_unique").on(
+      table.userId,
+      table.provider,
+    ),
+  ],
 );
 
 const userSettings = pgTable("user_settings", {
@@ -70,6 +104,13 @@ const userSettings = pgTable("user_settings", {
     .defaultNow()
     .notNull(),
 });
+
+const accountsRelations = relations(accounts, ({ one }) => ({
+  user: one(users, {
+    fields: [accounts.userId],
+    references: [users.id],
+  }),
+}));
 
 const friendRequests = pgTable(
   "friend_requests",
@@ -319,7 +360,11 @@ const notifications = pgTable(
 );
 
 const usersRelations = relations(users, ({ many, one }) => ({
-  settings: one(userSettings),
+  accounts: many(accounts),
+  settings: one(userSettings, {
+    fields: [users.id],
+    references: [userSettings.userId],
+  }),
   sentFriendRequests: many(friendRequests, {
     relationName: "friend_request_sender",
   }),

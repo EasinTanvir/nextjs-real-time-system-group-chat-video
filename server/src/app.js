@@ -13,7 +13,7 @@ const app = express();
 app.disable("x-powered-by");
 app.use(
   cors({
-    origin: corsOrigin.split(",").map((value) => value.trim()),
+    origin: corsOrigin,
     credentials: true,
   }),
 );
