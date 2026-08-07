@@ -5,36 +5,8 @@
     {
       "idx": 0,
       "version": "7",
-      "when": 1786010889866,
-      "tag": "0000_wandering_scourge",
-      "breakpoints": true
-    },
-    {
-      "idx": 1,
-      "version": "7",
-      "when": 1786012469327,
-      "tag": "0001_omniscient_turbo",
-      "breakpoints": true
-    },
-    {
-      "idx": 2,
-      "version": "7",
-      "when": 1786022620503,
-      "tag": "0002_plain_famine",
-      "breakpoints": true
-    },
-    {
-      "idx": 3,
-      "version": "7",
-      "when": 1786122476730,
-      "tag": "0003_living_frank_castle",
-      "breakpoints": true
-    },
-    {
-      "idx": 4,
-      "version": "7",
-      "when": 1786123757698,
-      "tag": "0004_whole_white_tiger",
+      "when": 1786129510263,
+      "tag": "0000_curvy_william_stryker",
       "breakpoints": true
     }
   ]

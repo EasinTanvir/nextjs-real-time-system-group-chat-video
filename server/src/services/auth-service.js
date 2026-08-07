@@ -6,38 +6,85 @@ const { users, accounts, userSettings } = require("../db/schema");
 const SALT_ROUNDS = 12;
 
 async function register({ email, username, password }) {
-  const normalizedEmail = email.toLowerCase();
+  try {
+    const normalizedEmail = email.toLowerCase();
 
-  const [existing] = await db
-    .select()
-    .from(users)
-    .where(eq(users.email, normalizedEmail));
-  if (existing) {
-    const error = new Error("Email already in use");
-    error.statusCode = 409;
-    throw error;
-  }
+    console.log("=== REGISTER START ===");
+    console.log("Email:", normalizedEmail);
 
-  const hashedPassword = await bcrypt.hash(password, SALT_ROUNDS);
+    const [existing] = await db
+      .select()
+      .from(users)
+      .where(eq(users.email, normalizedEmail));
 
-  const user = await db.transaction(async (tx) => {
-    const [newUser] = await tx
-      .insert(users)
-      .values({ email: normalizedEmail, username, password: hashedPassword })
-      .returning();
+    console.log("Existing user:", existing);
 
-    await tx.insert(accounts).values({
-      userId: newUser.id,
-      provider: "local",
-      providerAccountId: newUser.id,
+    if (existing) {
+      const error = new Error("Email already in use");
+      error.statusCode = 409;
+      throw error;
+    }
+
+    const hashedPassword = await bcrypt.hash(password, SALT_ROUNDS);
+
+    console.log("Password hashed");
+
+    // Debug imports
+    console.log("users table:", !!users);
+    console.log("accounts table:", !!accounts);
+    console.log("userSettings table:", !!userSettings);
+
+    const user = await db.transaction(async (tx) => {
+      try {
+        console.log("Creating user...");
+
+        const [newUser] = await tx
+          .insert(users)
+          .values({
+            email: normalizedEmail,
+            username,
+            password: hashedPassword,
+          })
+          .returning();
+
+        console.log("New user:", newUser);
+
+        console.log("Creating account...");
+
+        await tx.insert(accounts).values({
+          userId: newUser.id,
+          provider: "local",
+          providerAccountId: newUser.id,
+        });
+
+        console.log("Account created");
+
+        console.log("Creating user settings...");
+
+        await tx.insert(userSettings).values({
+          userId: newUser.id,
+        });
+
+        console.log("User settings created");
+
+        return newUser;
+      } catch (err) {
+        console.error("=== TRANSACTION ERROR ===");
+        console.error(err);
+        console.error(err.stack);
+        throw err;
+      }
     });
 
-    await tx.insert(userSettings).values({ userId: newUser.id });
+    console.log("=== REGISTER SUCCESS ===");
 
-    return newUser;
-  });
-
-  return sanitizeUser(user);
+    return sanitizeUser(user);
+  } catch (err) {
+    console.error("=== REGISTER ERROR ===");
+    console.error(err);
+    console.error(err.stack);
+    throw err;
+  }
 }
 
 function sanitizeUser(user) {

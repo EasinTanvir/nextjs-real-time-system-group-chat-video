@@ -1,13 +1,14 @@
 CREATE TYPE "public"."friend_request_status" AS ENUM('pending', 'accepted', 'rejected', 'cancelled');--> statement-breakpoint
 CREATE TYPE "public"."conversation_type" AS ENUM('direct', 'group');--> statement-breakpoint
 CREATE TYPE "public"."conversation_member_role" AS ENUM('owner', 'admin', 'member');--> statement-breakpoint
+CREATE TYPE "public"."notification_type" AS ENUM('friend_request', 'friend_accepted', 'friend_rejected', 'group_created', 'group_member_added', 'group_member_removed', 'message');--> statement-breakpoint
+CREATE TYPE "public"."auth_provider" AS ENUM('local', 'google');--> statement-breakpoint
 CREATE TABLE "users" (
 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
 	"email" text NOT NULL,
 	"username" text NOT NULL,
-	"display_name" text NOT NULL,
+	"password" text,
 	"avatar_url" text,
-	"bio" text,
 	"last_seen_at" timestamp with time zone,
 	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
 	"updated_at" timestamp with time zone DEFAULT now() NOT NULL
@@ -15,7 +16,6 @@ CREATE TABLE "users" (
 --> statement-breakpoint
 CREATE TABLE "user_settings" (
 	"user_id" uuid PRIMARY KEY NOT NULL,
-	"theme" text DEFAULT 'system' NOT NULL,
 	"notifications_enabled" boolean DEFAULT true NOT NULL,
 	"read_receipts_enabled" boolean DEFAULT true NOT NULL,
 	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
@@ -95,6 +95,28 @@ CREATE TABLE "message_reads" (
 	CONSTRAINT "message_reads_pkey" PRIMARY KEY("message_id","user_id")
 );
 --> statement-breakpoint
+CREATE TABLE "notifications" (
+	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
+	"recipient_id" uuid NOT NULL,
+	"actor_id" uuid,
+	"conversation_id" uuid,
+	"notification_type" "notification_type" NOT NULL,
+	"title" text NOT NULL,
+	"description" text NOT NULL,
+	"read_at" timestamp with time zone,
+	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
+	"updated_at" timestamp with time zone DEFAULT now() NOT NULL
+);
+--> statement-breakpoint
+CREATE TABLE "accounts" (
+	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
+	"user_id" uuid NOT NULL,
+	"provider" "auth_provider" NOT NULL,
+	"provider_account_id" text NOT NULL,
+	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
+	"updated_at" timestamp with time zone DEFAULT now() NOT NULL
+);
+--> statement-breakpoint
 ALTER TABLE "user_settings" ADD CONSTRAINT "user_settings_user_id_users_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."users"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "friend_requests" ADD CONSTRAINT "friend_requests_sender_id_users_id_fk" FOREIGN KEY ("sender_id") REFERENCES "public"."users"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "friend_requests" ADD CONSTRAINT "friend_requests_receiver_id_users_id_fk" FOREIGN KEY ("receiver_id") REFERENCES "public"."users"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
@@ -111,9 +133,11 @@ ALTER TABLE "messages" ADD CONSTRAINT "messages_conversation_id_conversations_id
 ALTER TABLE "messages" ADD CONSTRAINT "messages_sender_id_users_id_fk" FOREIGN KEY ("sender_id") REFERENCES "public"."users"("id") ON DELETE restrict ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "message_reads" ADD CONSTRAINT "message_reads_message_id_messages_id_fk" FOREIGN KEY ("message_id") REFERENCES "public"."messages"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "message_reads" ADD CONSTRAINT "message_reads_user_id_users_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."users"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "notifications" ADD CONSTRAINT "notifications_recipient_id_users_id_fk" FOREIGN KEY ("recipient_id") REFERENCES "public"."users"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "notifications" ADD CONSTRAINT "notifications_actor_id_users_id_fk" FOREIGN KEY ("actor_id") REFERENCES "public"."users"("id") ON DELETE set null ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "notifications" ADD CONSTRAINT "notifications_conversation_id_conversations_id_fk" FOREIGN KEY ("conversation_id") REFERENCES "public"."conversations"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "accounts" ADD CONSTRAINT "accounts_user_id_users_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."users"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 CREATE UNIQUE INDEX "users_email_unique" ON "users" USING btree (lower("email"));--> statement-breakpoint
-CREATE UNIQUE INDEX "users_username_unique" ON "users" USING btree (lower("username"));--> statement-breakpoint
-CREATE INDEX "users_discovery_idx" ON "users" USING btree (lower("display_name"));--> statement-breakpoint
 CREATE UNIQUE INDEX "friend_requests_one_pending_pair_unique" ON "friend_requests" USING btree ("sender_id","receiver_id") WHERE "friend_requests"."status" = 'pending';--> statement-breakpoint
 CREATE INDEX "friend_requests_receiver_created_idx" ON "friend_requests" USING btree ("receiver_id","created_at" DESC NULLS LAST);--> statement-breakpoint
 CREATE INDEX "friend_requests_sender_created_idx" ON "friend_requests" USING btree ("sender_id","created_at" DESC NULLS LAST);--> statement-breakpoint
@@ -124,4 +148,8 @@ CREATE INDEX "conversation_members_user_active_idx" ON "conversation_members" US
 CREATE INDEX "conversation_members_conversation_active_idx" ON "conversation_members" USING btree ("conversation_id","joined_at") WHERE "conversation_members"."left_at" IS NULL;--> statement-breakpoint
 CREATE INDEX "messages_conversation_cursor_idx" ON "messages" USING btree ("conversation_id","created_at" DESC NULLS LAST,"id" DESC NULLS LAST);--> statement-breakpoint
 CREATE INDEX "messages_sender_created_idx" ON "messages" USING btree ("sender_id","created_at" DESC NULLS LAST);--> statement-breakpoint
-CREATE INDEX "message_reads_user_message_idx" ON "message_reads" USING btree ("user_id","message_id");
+CREATE INDEX "message_reads_user_message_idx" ON "message_reads" USING btree ("user_id","message_id");--> statement-breakpoint
+CREATE INDEX "notifications_recipient_created_idx" ON "notifications" USING btree ("recipient_id","created_at" DESC NULLS LAST);--> statement-breakpoint
+CREATE INDEX "notifications_recipient_unread_idx" ON "notifications" USING btree ("recipient_id","created_at" DESC NULLS LAST) WHERE "notifications"."read_at" IS NULL;--> statement-breakpoint
+CREATE UNIQUE INDEX "accounts_provider_account_unique" ON "accounts" USING btree ("provider","provider_account_id");--> statement-breakpoint
+CREATE UNIQUE INDEX "accounts_user_provider_unique" ON "accounts" USING btree ("user_id","provider");

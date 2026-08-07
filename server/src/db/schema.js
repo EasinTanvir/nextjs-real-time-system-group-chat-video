@@ -40,7 +40,7 @@ const users = pgTable(
   "users",
   {
     id: uuid("id").defaultRandom().primaryKey(),
-    email: text("email").notNull().unique(),
+    email: text("email").notNull(),
     username: text("username").notNull(),
     // nullable now — Google-only users won't have one
     password: text("password"),
@@ -483,4 +483,7 @@ module.exports = {
   conversationMembersRelations,
   messageReadsRelations,
   notificationsRelations,
+  accountsRelations,
+  authProviderEnum,
+  accounts,
 };
