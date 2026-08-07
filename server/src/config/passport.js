@@ -116,14 +116,8 @@ passport.use(
 
 passport.serializeUser((user, done) => done(null, user.id));
 
-passport.deserializeUser(async (id, done) => {
-  try {
-    const [user] = await db.select().from(users).where(eq(users.id, id));
-    if (!user) return done(null, false);
-    return done(null, user);
-  } catch (err) {
-    return done(err);
-  }
+passport.deserializeUser((id, done) => {
+  done(null, { id });
 });
 
 module.exports = { passport };
