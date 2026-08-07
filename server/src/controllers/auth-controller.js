@@ -9,12 +9,10 @@ async function register(req, res, next) {
     const { email, username, password } = req.body;
 
     if (!email || !username || !password) {
-      return res
-        .status(400)
-        .json({
-          success: false,
-          message: "email, username and password are required",
-        });
+      return res.status(400).json({
+        success: false,
+        message: "email, username and password are required",
+      });
     }
 
     const user = await registerService({ email, username, password });
@@ -34,12 +32,10 @@ function login(req, res, next) {
   passport.authenticate("local", (err, user, info) => {
     if (err) return next(err);
     if (!user) {
-      return res
-        .status(401)
-        .json({
-          success: false,
-          message: info?.message || "Invalid credentials",
-        });
+      return res.status(401).json({
+        success: false,
+        message: info?.message || "Invalid credentials",
+      });
     }
 
     req.login(user, (loginErr) => {
@@ -69,4 +65,10 @@ function googleCallback(req, res) {
   res.redirect(process.env.CLIENT_URL || "/");
 }
 
-module.exports = { register, login, logout, googleCallback };
+function me(req, res) {
+  return res
+    .status(200)
+    .json({ success: true, data: { user: sanitizeUser(req.user) } });
+}
+
+module.exports = { register, login, logout, googleCallback, me };
