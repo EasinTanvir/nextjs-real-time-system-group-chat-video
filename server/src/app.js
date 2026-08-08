@@ -28,9 +28,6 @@ app.use(sessionMiddleware);
 app.use(passport.initialize());
 app.use(passport.session());
 
-app.get("/health", (_req, res) =>
-  res.status(200).json({ success: true, data: { status: "ok" } }),
-);
 app.use("/api/v1", authRoutes);
 app.use("/api/v1", requireAuth, userRoutes);
 app.use("/api/v1", requireAuth, friendRoutes);
