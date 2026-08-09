@@ -61,7 +61,7 @@ export default function Navbar({ isAuthenticated }) {
             {isAuthenticated ? (
               <>
                 <Link
-                  href="/dashboard"
+                  href="/chat"
                   className="rounded-xl bg-gradient-to-br from-blue-600 to-indigo-600 px-5 py-3 text-[13px] font-bold text-white shadow-[0_10px_20px_rgba(37,99,235,.22)] transition hover:-translate-y-0.5"
                 >
                   Get Started
