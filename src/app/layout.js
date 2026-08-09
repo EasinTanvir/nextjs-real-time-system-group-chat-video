@@ -1,5 +1,7 @@
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
+import Navbar from "@/components/Navbar";
+import { getCookie } from "@/lib/cookies";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -16,13 +18,20 @@ export const metadata = {
   description: "Modern chat for teams and friends.",
 };
 
-export default function RootLayout({ children }) {
+export default async function RootLayout({ children }) {
+  const sid = await getCookie("sid");
+
+  const isAuthenticated = Boolean(sid);
+
   return (
     <html
       lang="en"
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col">{children}</body>
+      <body className="min-h-full flex flex-col">
+        <Navbar isAuthenticated={isAuthenticated} />
+        {children}
+      </body>
     </html>
   );
 }
