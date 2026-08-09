@@ -4,7 +4,6 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
 import api from "@/lib/api";
-import { useAuth } from "@/providers/auth-provider";
 import { useForm } from "react-hook-form";
 import AuthField from "@/components/auth/auth-field";
 import AuthPageShell from "@/components/auth/auth-page-shell";
@@ -36,20 +35,30 @@ const emailRules = {
 const passwordRules = {
   required: "Password is required.",
   minLength: {
-    value: 8,
+    value: 6,
     message: "Password must be at least 8 characters.",
   },
 };
 
 export default function RegisterPage() {
-  const router = useRouter(); const { authenticate } = useAuth();
+  const router = useRouter();
+
   const {
     register,
     handleSubmit,
     formState: { errors, isSubmitting },
   } = useForm({ mode: "onTouched", reValidateMode: "onChange" });
 
-  const onSubmit = async (values) => { try { const result = await api.post("/auth/register", values); authenticate(result); toast.success("Account created."); router.replace("/chat"); } catch (error) { toast.error(error.message); } };
+  const onSubmit = async (values) => {
+    try {
+      const result = await api.post("/auth/register", values);
+
+      toast.success("Account created.");
+      router.replace("/chat");
+    } catch (error) {
+      toast.error(error.message);
+    }
+  };
 
   return (
     <AuthPageShell

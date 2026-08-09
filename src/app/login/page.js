@@ -1,11 +1,10 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+
 import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
 import api from "@/lib/api";
-import { useAuth } from "@/providers/auth-provider";
 import { useForm } from "react-hook-form";
 import AuthField from "@/components/auth/auth-field";
 import AuthPageShell from "@/components/auth/auth-page-shell";
@@ -27,14 +26,24 @@ const passwordRules = {
 };
 
 export default function LoginPage() {
-  const router = useRouter(); const { authenticate } = useAuth();
+  const router = useRouter();
+
   const {
     register,
     handleSubmit,
     formState: { errors, isSubmitting },
   } = useForm({ mode: "onTouched", reValidateMode: "onChange" });
 
-  const onSubmit = async (values) => { try { const result = await api.post("/auth/login", values); authenticate(result); toast.success("Welcome back!"); router.replace("/chat"); } catch (error) { toast.error(error.message); } };
+  const onSubmit = async (values) => {
+    try {
+      const result = await api.post("/auth/login", values);
+
+      toast.success("Welcome back!");
+      router.replace("/chat");
+    } catch (error) {
+      toast.error(error.message);
+    }
+  };
 
   return (
     <AuthPageShell
