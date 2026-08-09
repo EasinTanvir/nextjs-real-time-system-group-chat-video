@@ -16,7 +16,7 @@ const emitToUser = (userId, event, payload) =>
 const createSocketServer = (httpServer) => {
   const io = new Server(httpServer, {
     cors: {
-      origin: corsOrigin.split(",").map((value) => value.trim()),
+      origin: corsOrigin,
       credentials: true,
     },
   });

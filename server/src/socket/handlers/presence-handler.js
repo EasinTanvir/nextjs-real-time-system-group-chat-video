@@ -12,12 +12,10 @@ const registerPresenceHandlers = (io, socket) => {
       if (activeSockets.size > 1) return;
       for (const room of socket.rooms) {
         if (isConversationRoom(room))
-          socket
-            .to(room)
-            .emit(EVENTS.USER_OFFLINE, {
-              conversationId: room.slice("conversation:".length),
-              userId: socket.data.userId,
-            });
+          socket.to(room).emit(EVENTS.USER_OFFLINE, {
+            conversationId: room.slice("conversation:".length),
+            userId: socket.data.userId,
+          });
       }
     } catch (error) {
       console.error(
