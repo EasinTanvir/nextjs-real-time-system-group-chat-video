@@ -8,6 +8,13 @@
       "when": 1786129510263,
       "tag": "0000_curvy_william_stryker",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1786296130457,
+      "tag": "0001_talented_kitty_pryde",
+      "breakpoints": true
     }
   ]
 }
