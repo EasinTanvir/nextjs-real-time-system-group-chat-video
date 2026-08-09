@@ -12,6 +12,7 @@ const userRoutes = require("./routes/user-routes");
 const friendRoutes = require("./routes/friend-routes");
 const conversationRoutes = require("./routes/conversation-routes");
 const notificationRoutes = require("./routes/notification-routes");
+const coloredMorgan = require("./utils/morgan");
 
 const app = express();
 app.disable("x-powered-by");
@@ -28,6 +29,7 @@ app.use(express.json({ limit: "100kb" }));
 app.use(sessionMiddleware);
 app.use(passport.initialize());
 app.use(passport.session());
+app.use(coloredMorgan);
 
 app.use("/api/v1", authRoutes);
 app.use("/api/v1", requireAuth, userRoutes);

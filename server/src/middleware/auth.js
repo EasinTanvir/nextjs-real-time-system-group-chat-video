@@ -1,6 +1,6 @@
 function requireAuth(req, res, next) {
   if (req.isAuthenticated && req.isAuthenticated()) {
-    console.log("Authenticated user:", req.user);
+    // console.log("Authenticated user:", req.user);
     return next();
   }
   return res
