@@ -61,6 +61,13 @@ async function sendFriendRequest(senderId, receiverId) {
       .insert(friendRequests)
       .values({ senderId, receiverId })
       .returning();
+    await createNotification({
+      recipientId: receiverId,
+      actorId: senderId,
+      type: "friend_request",
+      title: "New friend request",
+      description: "You have a new friend request",
+    });
     return request;
   } catch (err) {
     if (err.code === "23505")
@@ -85,6 +92,14 @@ async function respondToFriendRequest(requestId, userId, action) {
       .set({ status: "rejected", respondedAt: new Date() })
       .where(eq(friendRequests.id, requestId))
       .returning();
+
+    await createNotification({
+      recipientId: request.senderId,
+      actorId: userId,
+      type: "friend_rejected",
+      title: "Friend request rejected",
+      description: "Your friend request was rejected",
+    });
     return { request: updated };
   }
 
@@ -110,6 +125,18 @@ async function respondToFriendRequest(requestId, userId, action) {
       tx,
       request.senderId,
       request.receiverId,
+    );
+
+    await createNotification(
+      {
+        recipientId: request.senderId,
+        actorId: userId,
+        conversationId: conversation.id,
+        type: "friend_accepted",
+        title: "Friend request accepted",
+        description: "Your friend request was accepted",
+      },
+      tx,
     );
 
     return { request: updated, friendship, conversation };

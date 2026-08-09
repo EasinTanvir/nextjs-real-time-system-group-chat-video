@@ -9,6 +9,8 @@ const { errorHandler, notFound } = require("./middleware/errors");
 const coloredMorgan = require("./utils/morgan");
 const authRoutes = require("./routes/auth-routes");
 const friendRoutes = require("./routes/friend-routes");
+const notificationRoutes = require("./routes/notification-routes");
+const conversationRoutes = require("./routes/message-routes");
 
 const app = express();
 app.disable("x-powered-by");
@@ -29,6 +31,8 @@ app.use(coloredMorgan);
 
 app.use("/api/v1", authRoutes);
 app.use("/api/v1", friendRoutes);
+app.use("/api/v1", notificationRoutes);
+app.use("/api/v1", conversationRoutes);
 
 app.use(notFound);
 app.use(errorHandler);
