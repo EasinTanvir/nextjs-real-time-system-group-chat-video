@@ -20,8 +20,8 @@ const emailRules = {
 const passwordRules = {
   required: "Password is required.",
   minLength: {
-    value: 8,
-    message: "Password must be at least 8 characters.",
+    value: 6,
+    message: "Password must be at least 6 characters.",
   },
 };
 
@@ -36,7 +36,7 @@ export default function LoginPage() {
 
   const onSubmit = async (values) => {
     try {
-      await api.post("/auth/login", values);
+      await api.post("/auth/login", values, { withCredentials: true });
 
       toast.success("Welcome back!");
       router.replace("/chat");
