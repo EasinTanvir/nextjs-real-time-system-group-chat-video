@@ -4,8 +4,10 @@ import ConversationDetails from "@/components/pages/ConversationDetails";
 const Conversation = async ({ params }) => {
   const user = await currentUser();
   const { conversationId } = await params;
-
-  return <ConversationDetails user={user} conversationId={conversationId} />;
+  console.log({ user });
+  return (
+    <ConversationDetails user={user?.user} conversationId={conversationId} />
+  );
 };
 
 export default Conversation;

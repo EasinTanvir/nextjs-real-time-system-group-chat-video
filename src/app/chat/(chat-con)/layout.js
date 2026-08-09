@@ -40,7 +40,7 @@ export default function ChatLayout({ children }) {
   }, []);
 
   return (
-    <div className="flex h-screen overflow-hidden bg-slate-50">
+    <div className="flex h-full overflow-hidden bg-slate-50">
       {/* Sidebar */}
       <aside className="flex w-full max-w-xs flex-col border-r border-slate-200 bg-white">
         <div className="flex items-center justify-between border-b border-slate-200 p-4">

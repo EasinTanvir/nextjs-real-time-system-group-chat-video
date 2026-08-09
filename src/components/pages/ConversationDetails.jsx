@@ -24,7 +24,7 @@ export default function ConversationDetails({ user, conversationId }) {
   const bottomRef = useRef(null);
 
   const currentUserId = String(user?.id);
-
+  console.log("currentUserId", currentUserId);
   const scrollToBottom = () => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   };
