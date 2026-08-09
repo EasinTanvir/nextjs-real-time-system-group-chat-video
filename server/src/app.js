@@ -4,6 +4,7 @@ const passport = require("passport");
 const { corsOrigin } = require("./config/env");
 const { sessionMiddleware } = require("./config/session");
 require("./config/passport");
+require("./redis/workers/email-worker");
 const { requireAuth } = require("./middleware/auth");
 const { errorHandler, notFound } = require("./middleware/errors");
 const authRoutes = require("./routes/auth-routes");

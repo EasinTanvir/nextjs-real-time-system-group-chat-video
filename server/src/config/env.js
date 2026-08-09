@@ -7,6 +7,9 @@ const googleClientId = process.env.GOOGLE_CLIENT_ID;
 const googleClientSecret = process.env.GOOGLE_CLIENT_SECRET;
 const googleCallbackUrl = process.env.GOOGLE_CALLBACK_URL;
 
+const SMTP_USER = process.env.SMTP_USER;
+const SMTP_PASS = process.env.SMTP_PASS;
+
 module.exports = {
   port,
   corsOrigin,
@@ -16,4 +19,6 @@ module.exports = {
   googleClientId,
   googleClientSecret,
   googleCallbackUrl,
+  SMTP_USER,
+  SMTP_PASS,
 };

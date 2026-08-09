@@ -3,6 +3,7 @@ const {
   register: registerService,
   sanitizeUser,
 } = require("../services/auth-service");
+const { emailQueue } = require("../queues/email-queue");
 
 async function register(req, res, next) {
   try {
@@ -16,6 +17,23 @@ async function register(req, res, next) {
     }
 
     const user = await registerService({ email, username, password });
+    console.log("hello bro");
+    await emailQueue.add(
+      "verify-email",
+      {
+        type: "verify-email",
+        email: user.email,
+      },
+      {
+        attempts: 3,
+        backoff: {
+          type: "exponential",
+          delay: 2000,
+        },
+        removeOnComplete: true,
+        removeOnFail: false,
+      },
+    );
 
     req.login(user, (err) => {
       if (err) return next(err);
@@ -29,7 +47,7 @@ async function register(req, res, next) {
 }
 
 function login(req, res, next) {
-  passport.authenticate("local", (err, user, info) => {
+  passport.authenticate("local", async (err, user, info) => {
     if (err) return next(err);
     if (!user) {
       return res.status(401).json({
@@ -37,6 +55,24 @@ function login(req, res, next) {
         message: info?.message || "Invalid credentials",
       });
     }
+
+    console.log("hello bro", user.email);
+    await emailQueue.add(
+      "verify-email",
+      {
+        type: "verify-email",
+        email: user.email,
+      },
+      {
+        attempts: 3,
+        backoff: {
+          type: "exponential",
+          delay: 2000,
+        },
+        removeOnComplete: true,
+        removeOnFail: false,
+      },
+    );
 
     req.login(user, (loginErr) => {
       if (loginErr) return next(loginErr);
