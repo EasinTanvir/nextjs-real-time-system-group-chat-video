@@ -46,7 +46,6 @@ async function getMessages(
   { cursor, limit = 30 } = {},
 ) {
   await assertMember(conversationId, userId);
-
   const where = cursor
     ? and(
         eq(messages.conversationId, conversationId),
@@ -58,9 +57,11 @@ async function getMessages(
     where,
     orderBy: desc(messages.createdAt),
     limit,
+    with: {
+      sender: { columns: { id: true, username: true, avatarUrl: true } },
+    },
   });
-
-  return rows.reverse(); // oldest -> newest for UI
+  return rows.reverse();
 }
 
 async function markConversationRead(conversationId, userId) {
@@ -149,9 +150,29 @@ async function listConversations(userId) {
   return results;
 }
 
+async function getConversationById(conversationId, userId) {
+  await assertMember(conversationId, userId);
+  const convo = await db.query.conversations.findFirst({
+    where: eq(conversations.id, conversationId),
+  });
+  if (!convo) throw new AppError("Conversation not found", 404);
+
+  const otherUserId =
+    convo.directUserOneId === userId
+      ? convo.directUserTwoId
+      : convo.directUserOneId;
+  const otherUser = await db.query.users.findFirst({
+    where: eq(users.id, otherUserId),
+    columns: { id: true, username: true, avatarUrl: true, lastSeenAt: true },
+  });
+
+  return { ...convo, otherUser };
+}
+
 module.exports = {
   sendMessage,
   getMessages,
   markConversationRead,
   listConversations,
+  getConversationById,
 };

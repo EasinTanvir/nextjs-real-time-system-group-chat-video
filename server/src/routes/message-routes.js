@@ -5,10 +5,14 @@ const {
   fetchMessages,
   readConversation,
   fetchConversations,
+  fetchConversation,
 } = require("../controllers/message-controller");
 
 // 	List conversations, last message, unread count
 router.get("/conversations", requireAuth, fetchConversations);
+
+router.get("/conversations/:conversationId", requireAuth, fetchConversation);
+
 // Paginated messages
 router.get(
   "/conversations/:conversationId/messages",

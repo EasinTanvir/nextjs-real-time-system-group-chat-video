@@ -3,6 +3,7 @@ const {
   getMessages,
   markConversationRead,
   listConversations,
+  getConversationById,
 } = require("../services/message-service");
 
 async function postMessage(req, res, next) {
@@ -52,9 +53,22 @@ async function fetchConversations(req, res, next) {
   }
 }
 
+async function fetchConversation(req, res, next) {
+  try {
+    const data = await getConversationById(
+      req.params.conversationId,
+      req.user.id,
+    );
+    res.status(200).json({ success: true, data });
+  } catch (err) {
+    next(err);
+  }
+}
+
 module.exports = {
   postMessage,
   fetchMessages,
   readConversation,
   fetchConversations,
+  fetchConversation,
 };
