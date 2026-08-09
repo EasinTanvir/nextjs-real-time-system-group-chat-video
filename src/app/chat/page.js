@@ -3,22 +3,21 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
 import api from "@/lib/api";
-import { getSocket } from "@/lib/socket";
+
 export default function ChatPage() {
   const [items, setItems] = useState([]),
     [name, setName] = useState(""),
     [loading, setLoading] = useState(true);
+
   const load = async () => {
     try {
       setLoading(true);
-      setItems(
-        (
-          await api.get("/conversations", {
-            params: { limit: 100 },
-            withCredentials: true,
-          })
-        ).items,
-      );
+      const { data } = await api.get("/conversations", {
+        params: { limit: 100 },
+        withCredentials: true,
+      });
+
+      setItems(data.items || []);
     } catch (e) {
       console.log("chat error", e);
       toast.error(e.message);
@@ -27,37 +26,14 @@ export default function ChatPage() {
     }
   };
   useEffect(() => {
-    const timer = setTimeout(load, 0);
-    const s = getSocket();
-    const refresh = () => load();
-    s.on("conversation:available", refresh);
-    s.on("message:new", refresh);
-    return () => {
-      clearTimeout(timer);
-      s.off("conversation:available", refresh);
-      s.off("message:new", refresh);
-    };
+    load();
   }, []);
-  const group = async (e) => {
-    e.preventDefault();
-    try {
-      const c = await api.post("/conversations", {
-        type: "group",
-        name,
-        memberIds: [],
-      });
-      setName("");
-      setItems((x) => [c, ...x]);
-      toast.success("Group created.");
-    } catch (e) {
-      toast.error(e.message);
-    }
-  };
+
   return (
     <main className="mx-auto max-w-5xl p-5 sm:p-8">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <h1 className="text-3xl font-bold">Conversations</h1>
-        <form onSubmit={group} className="flex gap-2">
+        <form className="flex gap-2">
           <input
             required
             value={name}
