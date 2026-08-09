@@ -8,6 +8,7 @@ const {
 } = require("../db/schema");
 const { AppError } = require("../utils/app-error");
 const { createDirectConversationTx } = require("./conversation-service");
+const { createNotification } = require("./notification-service");
 
 async function sendFriendRequest(senderId, receiverId) {
   if (senderId === receiverId) {
