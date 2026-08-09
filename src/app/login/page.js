@@ -41,6 +41,7 @@ export default function LoginPage() {
       toast.success("Welcome back!");
       router.replace("/chat");
     } catch (error) {
+      console.log("login error", error);
       toast.error(error.message);
     }
   };
