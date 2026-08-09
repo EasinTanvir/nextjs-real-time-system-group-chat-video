@@ -46,7 +46,7 @@ export default function ChatLayout({ children }) {
         <div className="flex items-center justify-between border-b border-slate-200 p-4">
           <h1 className="text-xl font-bold">Chats</h1>
           <Link
-            href="/users"
+            href="/chat/users"
             className="rounded-lg bg-blue-600 px-3 py-1.5 text-sm text-white"
           >
             + New
