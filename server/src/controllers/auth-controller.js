@@ -4,6 +4,9 @@ const {
   sanitizeUser,
 } = require("../services/auth-service");
 const { emailQueue } = require("../queues/email-queue");
+const { db } = require("../db/client");
+const { users } = require("../db/schema");
+const { eq } = require("drizzle-orm");
 
 async function register(req, res, next) {
   try {
@@ -83,10 +86,41 @@ function googleCallback(req, res) {
   res.redirect(process.env.CLIENT_URL || "/");
 }
 
-function me(req, res) {
-  return res
-    .status(200)
-    .json({ success: true, data: { user: sanitizeUser(req.user) } });
-}
+async function me(req, res, next) {
+  try {
+    if (!req.user) {
+      return res.status(401).json({
+        success: false,
+        message: "Unauthorized",
+      });
+    }
 
+    const [user] = await db
+      .select({
+        id: users.id,
+        email: users.email,
+        username: users.username,
+        createdAt: users.createdAt,
+        updatedAt: users.updatedAt,
+      })
+      .from(users)
+      .where(eq(users.id, req.user.id))
+      .limit(1);
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: "User not found",
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      data: { user },
+    });
+  } catch (err) {
+    console.error("=== ME ERROR ===", err);
+    next(err);
+  }
+}
 module.exports = { register, login, logout, googleCallback, me };
