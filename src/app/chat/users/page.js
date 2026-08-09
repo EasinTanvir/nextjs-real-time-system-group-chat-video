@@ -1,94 +1,117 @@
 "use client";
-import { useCallback, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
 import api from "@/lib/api";
 
-export default function UsersPage() {
-  const [items, setItems] = useState([]),
-    [search, setSearch] = useState(""),
-    [loading, setLoading] = useState(true);
-  const load = useCallback(async () => {
+const UsersPage = () => {
+  const [users, setUsers] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  const load = async () => {
     try {
       setLoading(true);
-      const { data } = await api.get("/users", {
-        params: { search, limit: 50 },
-      });
-      console.log(data);
-      setItems(data.data.items);
+      const { data } = await api.get("/users/discover");
+      setUsers(data.data || []);
     } catch (e) {
-      toast.error(e.message);
+      toast.error(e.response?.data?.message || e.message);
     } finally {
       setLoading(false);
     }
-  }, [search]);
-  useEffect(() => {
-    const t = setTimeout(load, 250);
+  };
 
-    s.on("friendship:updated", load);
-    return () => {
-      clearTimeout(t);
-      s.off("friendship:updated", load);
-    };
-  }, [load]);
-  const request = async (id) => {
+  useEffect(() => {
+    load();
+  }, []);
+
+  const sendRequest = async (receiverId) => {
     try {
-      await api.post("/friend-requests", { receiverId: id });
-      setItems((x) =>
-        x.map((u) =>
-          u.id === id ? { ...u, relationship: "outgoing_pending" } : u,
-        ),
-      );
-      toast.success("Friend request sent.");
+      await api.post("/friends/requests", { receiverId });
+      toast.success("Friend request sent");
+      load();
     } catch (e) {
-      toast.error(e.message);
+      toast.error(e.response?.data?.message || e.message);
     }
   };
-  const action = (u) =>
-    u.relationship === "friends" ? (
-      <span className="text-sm font-semibold text-emerald-600">Friends</span>
-    ) : u.relationship === "outgoing_pending" ? (
-      <span className="text-sm font-semibold text-amber-600">Pending</span>
-    ) : u.relationship === "incoming_pending" ? (
-      <a href="/chat/friends" className="text-sm font-semibold text-blue-600">
-        Respond in Friends
-      </a>
-    ) : (
-      <button
-        className="rounded-lg bg-blue-600 px-4 py-2 text-white disabled:opacity-50"
-        onClick={() => request(u.id)}
-      >
-        Add friend
-      </button>
-    );
+
+  const acceptRequest = async (requestId) => {
+    try {
+      await api.post(`/friends/requests/${requestId}/accept`);
+      toast.success("Friend request accepted");
+      load();
+    } catch (e) {
+      toast.error(e.response?.data?.message || e.message);
+    }
+  };
+
+  const cancelRequest = async (requestId) => {
+    try {
+      await api.delete(`/friends/requests/${requestId}`);
+      toast.success("Request cancelled");
+      load();
+    } catch (e) {
+      toast.error(e.response?.data?.message || e.message);
+    }
+  };
+
+  const renderAction = (u) => {
+    if (u.friendStatus === "none") {
+      return (
+        <button
+          onClick={() => sendRequest(u.id)}
+          className="rounded-lg bg-blue-600 px-3 py-1.5 text-sm text-white"
+        >
+          Add Friend
+        </button>
+      );
+    }
+    if (u.friendStatus === "pending_sent") {
+      return (
+        <button
+          onClick={() => cancelRequest(u.requestId)}
+          className="rounded-lg border border-slate-300 px-3 py-1.5 text-sm text-slate-600"
+        >
+          Cancel Request
+        </button>
+      );
+    }
+    if (u.friendStatus === "pending_received") {
+      return (
+        <button
+          onClick={() => acceptRequest(u.requestId)}
+          className="rounded-lg bg-green-600 px-3 py-1.5 text-sm text-white"
+        >
+          Accept Request
+        </button>
+      );
+    }
+    return null;
+  };
+
   return (
     <main className="mx-auto max-w-5xl p-5 sm:p-8">
-      <h1 className="text-3xl font-bold">Discover users</h1>
-      <input
-        className="mt-6 w-full rounded-xl border border-slate-200 p-3"
-        value={search}
-        onChange={(e) => setSearch(e.target.value)}
-        placeholder="Search by name or username"
-      />
-      {items.map((u) => (
-        <article
+      <h1 className="text-3xl font-bold">Discover Users</h1>
+
+      {users.map((u) => (
+        <div
           key={u.id}
-          className="mt-3 flex items-center justify-between gap-4 rounded-xl border border-slate-200 p-4"
+          className="mt-3 flex items-center justify-between rounded-xl border border-slate-200 p-4"
         >
-          <div className="min-w-0">
-            <b>{u.displayName}</b>
-            <p className="text-sm text-slate-500">@{u.username}</p>
-            {u.bio && (
-              <p className="truncate text-sm text-slate-600">{u.bio}</p>
-            )}
+          <div>
+            <b>{u.username}</b>
           </div>
-          {action(u)}
-        </article>
+          {renderAction(u)}
+        </div>
       ))}
+
       {loading ? (
-        <p className="mt-6 text-slate-500">Loading people…</p>
+        <p className="mt-8 text-slate-500">Loading users…</p>
       ) : (
-        !items.length && <p className="mt-6 text-slate-500">No users found.</p>
+        !users.length && (
+          <p className="mt-8 text-slate-500">No users to show.</p>
+        )
       )}
     </main>
   );
-}
+};
+
+export default UsersPage;

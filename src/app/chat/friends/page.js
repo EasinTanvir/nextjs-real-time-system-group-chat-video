@@ -1,114 +1,111 @@
 "use client";
+import Link from "next/link";
 import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
 import api from "@/lib/api";
-import { useRouter } from "next/navigation";
 
-export default function FriendsPage() {
-  const [friends, setFriends] = useState([]),
-    [received, setReceived] = useState([]),
-    [sent, setSent] = useState([]);
-  const router = useRouter();
+const FriendPage = () => {
+  const [friends, setFriends] = useState([]);
+  const [incoming, setIncoming] = useState([]);
+  const [loading, setLoading] = useState(true);
+
   const load = async () => {
     try {
-      const [f, r, s] = await Promise.all([
+      setLoading(true);
+      const [f, i] = await Promise.all([
         api.get("/friends"),
-        api.get("/friend-requests"),
-        api.get("/friend-requests?type=sent"),
+        api.get("/friends/requests/incoming"),
       ]);
-
-      setFriends(f.data.data);
-      setReceived(r.data.data.filter((x) => x.status === "pending"));
-      setSent(s.data.data.filter((x) => x.status === "pending"));
+      setFriends(f.data.data || []);
+      setIncoming(i.data.data || []);
     } catch (e) {
-      toast.error(e.message);
+      toast.error(e.response?.data?.message || e.message);
+    } finally {
+      setLoading(false);
     }
   };
-  useEffect(() => {
-    const timer = setTimeout(load, 0);
 
-    s.on("friendship:updated", load);
-    return () => {
-      clearTimeout(timer);
-      s.off("friendship:updated", load);
-    };
+  useEffect(() => {
+    load();
   }, []);
-  const respond = async (id, status) => {
+
+  const acceptRequest = async (requestId) => {
     try {
-      await api.patch(`/friend-requests/${id}`, { status });
-      toast.success(`Request ${status}.`);
+      await api.post(`/friends/requests/${requestId}/accept`);
+      toast.success("Friend request accepted");
       load();
     } catch (e) {
-      toast.error(e.message);
+      toast.error(e.response?.data?.message || e.message);
     }
   };
-  const chat = async (id) => {
+
+  const rejectRequest = async (requestId) => {
     try {
-      const c = await api.post("/conversations/direct", { userId: id });
-      router.push(`/chat/conversation/${c.id}`);
+      await api.post(`/friends/requests/${requestId}/reject`);
+      toast.success("Friend request rejected");
+      load();
     } catch (e) {
-      toast.error(e.message);
+      toast.error(e.response?.data?.message || e.message);
     }
   };
+
   return (
     <main className="mx-auto max-w-5xl p-5 sm:p-8">
+      {incoming.length > 0 && (
+        <section className="mb-8">
+          <h2 className="text-xl font-semibold">Friend Requests</h2>
+          {incoming.map((r) => (
+            <div
+              key={r.id}
+              className="mt-3 flex items-center justify-between rounded-xl border border-slate-200 p-4"
+            >
+              <b>{r.sender?.username}</b>
+              <div className="flex gap-2">
+                <button
+                  onClick={() => acceptRequest(r.id)}
+                  className="rounded-lg bg-green-600 px-3 py-1.5 text-sm text-white"
+                >
+                  Accept
+                </button>
+                <button
+                  onClick={() => rejectRequest(r.id)}
+                  className="rounded-lg border border-slate-300 px-3 py-1.5 text-sm text-slate-600"
+                >
+                  Reject
+                </button>
+              </div>
+            </div>
+          ))}
+        </section>
+      )}
+
       <h1 className="text-3xl font-bold">Friends</h1>
-      <h2 className="mt-7 text-xl font-bold">Requests received</h2>
-      {received.length ? (
-        received.map((r) => (
-          <section
-            key={r.id}
-            className="mt-3 flex flex-wrap items-center gap-3 rounded-xl border border-slate-200 p-4"
-          >
-            <span>
-              <b>{r.sender.displayName}</b> wants to connect
-            </span>
-            <button
-              onClick={() => respond(r.id, "accepted")}
-              className="ml-auto rounded-lg bg-blue-600 px-3 py-1.5 text-white"
-            >
-              Accept
-            </button>
-            <button
-              onClick={() => respond(r.id, "rejected")}
-              className="rounded-lg px-3 py-1.5 text-rose-600"
-            >
-              Reject
-            </button>
-          </section>
-        ))
-      ) : (
-        <p className="mt-3 text-sm text-slate-500">No pending requests.</p>
-      )}
-      <h2 className="mt-8 text-xl font-bold">Your friends</h2>
       {friends.map((f) => (
-        <article
+        <div
           key={f.id}
-          className="mt-3 flex justify-between rounded-xl border border-slate-200 p-4"
+          className="mt-3 flex items-center justify-between rounded-xl border border-slate-200 p-4"
         >
-          <span>
-            <b>{f.displayName}</b>{" "}
-            <small className="text-slate-500">@{f.username}</small>
-          </span>
-          <button
-            onClick={() => chat(f.id)}
-            className="font-semibold text-blue-600"
-          >
-            Message
-          </button>
-        </article>
+          <b>{f.username}</b>
+          {f.conversationId && (
+            <Link
+              href={`/chat/conversation/${f.conversationId}`}
+              className="rounded-lg bg-blue-600 px-3 py-1.5 text-sm text-white"
+            >
+              Message
+            </Link>
+          )}
+        </div>
       ))}
-      {!friends.length && (
-        <p className="mt-3 text-sm text-slate-500">
-          Accept a request to start chatting.
-        </p>
+
+      {loading ? (
+        <p className="mt-8 text-slate-500">Loading friends…</p>
+      ) : (
+        !friends.length && (
+          <p className="mt-8 text-slate-500">No friends yet.</p>
+        )
       )}
-      <h2 className="mt-8 text-xl font-bold">Sent requests</h2>
-      <p className="mt-2 text-slate-500">
-        {sent.length
-          ? sent.map((request) => request.receiver.displayName).join(", ")
-          : "No sent requests pending."}
-      </p>
     </main>
   );
-}
+};
+
+export default FriendPage;
