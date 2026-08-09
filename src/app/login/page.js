@@ -36,7 +36,7 @@ export default function LoginPage() {
 
   const onSubmit = async (values) => {
     try {
-      const result = await api.post("/auth/login", values);
+      await api.post("/auth/login", values);
 
       toast.success("Welcome back!");
       router.replace("/chat");
