@@ -5,10 +5,8 @@ const { createServer } = require("node:http");
 const { app } = require("./app");
 const { port } = require("./config/env");
 const { pool } = require("./db/client");
-const { createSocketServer } = require("./socket");
 
 const server = createServer(app);
-const io = createSocketServer(server);
 
 server.listen(port, () =>
   console.log(`Chat API and real-time server listening on port ${port}`),

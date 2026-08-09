@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
 import api from "@/lib/api";
 import { useRouter } from "next/navigation";
-import { getSocket } from "@/lib/socket";
+
 export default function FriendsPage() {
   const [friends, setFriends] = useState([]),
     [received, setReceived] = useState([]),
@@ -26,7 +26,7 @@ export default function FriendsPage() {
   };
   useEffect(() => {
     const timer = setTimeout(load, 0);
-    const s = getSocket();
+
     s.on("friendship:updated", load);
     return () => {
       clearTimeout(timer);

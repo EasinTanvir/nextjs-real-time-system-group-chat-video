@@ -3,7 +3,6 @@ import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import toast from "react-hot-toast";
 import api from "@/lib/api";
-import { getSocket, socketCall } from "@/lib/socket";
 
 export default function ConversationPage() {
   const { conversationId } = useParams();
@@ -26,14 +25,13 @@ export default function ConversationPage() {
         if (active) {
           setConversation(c);
           setMessages(m.items.reverse());
-          await socketCall("conversation:join", { conversationId });
         }
       } catch (e) {
         toast.error(e.message);
       }
     };
     load();
-    const s = getSocket();
+
     const onMessage = ({ message }) =>
       message.conversationId === conversationId &&
       setMessages((x) =>
@@ -47,16 +45,13 @@ export default function ConversationPage() {
       active = false;
       s.off("message:new", onMessage);
       s.off("typing:updated", onTyping);
-      socketCall("conversation:leave", { conversationId }).catch(() => {});
     };
   }, [conversationId]);
   const send = async (e) => {
     e.preventDefault();
     if (!content.trim()) return;
     try {
-      await socketCall("message:send", { conversationId, content });
       setContent("");
-      socketCall("typing:stop", { conversationId });
     } catch (e) {
       toast.error(e.message);
     }
@@ -99,10 +94,9 @@ export default function ConversationPage() {
           value={content}
           onChange={(e) => {
             setContent(e.target.value);
-            socketCall("typing:start", { conversationId }).catch(() => {});
           }}
           onBlur={() =>
-            socketCall("typing:stop", { conversationId }).catch(() => {})
+           
           }
           className="flex-1 rounded-xl border p-3"
           placeholder="Write a message"

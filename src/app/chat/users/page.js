@@ -2,7 +2,7 @@
 import { useCallback, useEffect, useState } from "react";
 import toast from "react-hot-toast";
 import api from "@/lib/api";
-import { getSocket } from "@/lib/socket";
+
 export default function UsersPage() {
   const [items, setItems] = useState([]),
     [search, setSearch] = useState(""),
@@ -23,7 +23,7 @@ export default function UsersPage() {
   }, [search]);
   useEffect(() => {
     const t = setTimeout(load, 250);
-    const s = getSocket();
+
     s.on("friendship:updated", load);
     return () => {
       clearTimeout(t);

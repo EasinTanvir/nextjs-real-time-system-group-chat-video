@@ -2,8 +2,7 @@ const service = require("../services/friend-service");
 const { asyncHandler } = require("../utils/async-handler");
 const { success } = require("../utils/response");
 const { oneOf, uuid } = require("../utils/validation");
-const { emitToUser } = require("../socket");
-const { EVENTS } = require("../socket/events");
+
 const create = asyncHandler(async (req, res) => {
   const result = await service.createRequest(
     req.userId,

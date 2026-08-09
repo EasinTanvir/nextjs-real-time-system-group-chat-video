@@ -15,7 +15,6 @@ import {
 } from "lucide-react";
 
 import api from "@/lib/api";
-import { connectSocket, getSocket } from "@/lib/socket";
 
 const navigation = [
   [MessageCircle, "Chats", "/chat"],
@@ -133,7 +132,7 @@ export default function ChatShell({ children }) {
   };
   useEffect(() => {
     const timer = setTimeout(loadNotifications, 0);
-    const socket = getSocket();
+
     const received = ({ notification }) => {
       setNotifications((items) =>
         [
@@ -142,12 +141,6 @@ export default function ChatShell({ children }) {
         ].slice(0, 10),
       );
       setUnread((count) => count + 1);
-    };
-    socket.on("notification:new", received);
-    connectSocket().catch(() => {});
-    return () => {
-      clearTimeout(timer);
-      socket.off("notification:new", received);
     };
   }, []);
   const openNotifications = async () => {
