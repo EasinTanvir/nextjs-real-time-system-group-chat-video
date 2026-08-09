@@ -4,6 +4,7 @@ import { Menu, MessageCircle } from "lucide-react";
 
 import Container from "./Container";
 import { logout } from "@/lib/cookies";
+import { usePathname } from "next/navigation";
 function BrandMark() {
   return (
     <span className="grid h-8 w-8 place-items-center rounded-lg bg-gradient-to-br from-blue-500 to-indigo-600 text-white shadow-[0_6px_14px_rgba(37,99,235,.25)]">
@@ -13,6 +14,10 @@ function BrandMark() {
 }
 
 export default function Navbar({ isAuthenticated }) {
+  const pathname = usePathname();
+  if (pathname.startsWith("/chat")) {
+    return null;
+  }
   return (
     <header className="border-b border-slate-200/80">
       <Container>

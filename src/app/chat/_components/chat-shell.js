@@ -175,74 +175,7 @@ export default function ChatShell({ children }) {
       >
         <Sidebar close={() => setMenuOpen(false)} />
       </div>
-      <div className="min-w-0 flex-1">
-        <header className="flex h-[90px] items-center gap-3 border-b border-slate-200/80 bg-white px-4 sm:px-8 lg:px-8">
-          <button
-            onClick={() => setMenuOpen(true)}
-            className="grid h-10 w-10 shrink-0 place-items-center rounded-xl border border-slate-200 text-slate-700 lg:hidden"
-            aria-label="Open navigation"
-          >
-            <Menu className="h-5 w-5" />
-          </button>
-          <label className="flex h-11 min-w-0 max-w-[770px] flex-1 items-center gap-3 rounded-xl border border-slate-200 bg-slate-50/70 px-4 text-slate-500 shadow-[0_2px_5px_rgba(15,23,42,.02)]">
-            <CircleUserRound className="h-5 w-5 shrink-0" />
-            <input
-              className="min-w-0 flex-1 bg-transparent text-sm text-slate-800 outline-none placeholder:text-slate-500"
-              type="search"
-              placeholder="Search anything..."
-              aria-label="Search anything"
-            />
-            <kbd className="hidden rounded-md text-xs font-semibold text-slate-500 sm:inline">
-              ⌘ K
-            </kbd>
-          </label>
-          <div className="ml-auto flex items-center gap-2 sm:gap-5">
-            <div className="relative">
-              <button
-                onClick={openNotifications}
-                className="relative grid h-10 w-10 place-items-center rounded-xl text-slate-600 transition hover:bg-slate-50 hover:text-blue-600"
-                aria-label="Notifications"
-                aria-expanded={notificationsOpen}
-              >
-                <Bell className="h-5 w-5" />
-                {unread > 0 && (
-                  <span className="absolute right-1 top-1 grid min-w-4 place-items-center rounded-full bg-rose-500 px-1 text-[10px] font-bold text-white">
-                    {unread > 9 ? "9+" : unread}
-                  </span>
-                )}
-              </button>
-              {notificationsOpen && (
-                <section
-                  className="absolute right-0 z-30 mt-2 w-80 rounded-xl border border-slate-200 bg-white p-3 shadow-xl"
-                  aria-label="Recent notifications"
-                >
-                  <h2 className="px-2 pb-2 text-sm font-bold">Notifications</h2>
-                  {notifications.length ? (
-                    notifications.map((item) => (
-                      <div
-                        key={item.id}
-                        className={`rounded-lg px-2 py-2 text-sm ${item.readAt ? "text-slate-600" : "bg-blue-50 text-slate-900"}`}
-                      >
-                        <p className="font-semibold">{item.title}</p>
-                        <p className="text-xs">{item.description}</p>
-                      </div>
-                    ))
-                  ) : (
-                    <p className="px-2 py-4 text-sm text-slate-500">
-                      You&apos;re all caught up.
-                    </p>
-                  )}
-                </section>
-              )}
-            </div>
-            <span className="relative hidden sm:block">
-              <Avatar initials="ET" color="from-amber-300 to-orange-200" />
-              <span className="absolute bottom-0 right-0 h-3 w-3 rounded-full border-2 border-white bg-emerald-500" />
-            </span>
-          </div>
-        </header>
-        {children}
-      </div>
+      <div className="min-w-0 flex-1">{children}</div>
     </div>
   );
 }
