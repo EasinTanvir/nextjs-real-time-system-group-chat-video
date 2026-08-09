@@ -304,26 +304,6 @@ const conversationMembers = pgTable(
   ],
 );
 
-const messageReads = pgTable(
-  "message_reads",
-  {
-    messageId: uuid("message_id")
-      .notNull()
-      .references(() => messages.id, { onDelete: "cascade" }),
-    userId: uuid("user_id")
-      .notNull()
-      .references(() => users.id, { onDelete: "cascade" }),
-    readAt: timestamp("read_at", { withTimezone: true }).defaultNow().notNull(),
-  },
-  (table) => [
-    primaryKey({
-      columns: [table.messageId, table.userId],
-      name: "message_reads_pkey",
-    }),
-    index("message_reads_user_message_idx").on(table.userId, table.messageId),
-  ],
-);
-
 const notifications = pgTable(
   "notifications",
   {
@@ -373,7 +353,6 @@ const usersRelations = relations(users, ({ many, one }) => ({
   }),
   sentMessages: many(messages),
   memberships: many(conversationMembers),
-  messageReads: many(messageReads),
   receivedNotifications: many(notifications, {
     relationName: "notification_recipient",
   }),
@@ -415,7 +394,6 @@ const messagesRelations = relations(messages, ({ one, many }) => ({
     references: [conversations.id],
   }),
   sender: one(users, { fields: [messages.senderId], references: [users.id] }),
-  reads: many(messageReads),
 }));
 
 const conversationMembersRelations = relations(
@@ -436,14 +414,6 @@ const conversationMembersRelations = relations(
     }),
   }),
 );
-
-const messageReadsRelations = relations(messageReads, ({ one }) => ({
-  message: one(messages, {
-    fields: [messageReads.messageId],
-    references: [messages.id],
-  }),
-  user: one(users, { fields: [messageReads.userId], references: [users.id] }),
-}));
 
 const notificationsRelations = relations(notifications, ({ one }) => ({
   recipient: one(users, {
@@ -474,14 +444,12 @@ module.exports = {
   conversations,
   conversationMembers,
   messages,
-  messageReads,
   notifications,
   usersRelations,
   friendRequestsRelations,
   conversationsRelations,
   messagesRelations,
   conversationMembersRelations,
-  messageReadsRelations,
   notificationsRelations,
   accountsRelations,
   authProviderEnum,

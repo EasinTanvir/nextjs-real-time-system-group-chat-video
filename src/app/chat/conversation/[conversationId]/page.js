@@ -95,9 +95,7 @@ export default function ConversationPage() {
           onChange={(e) => {
             setContent(e.target.value);
           }}
-          onBlur={() =>
-           
-          }
+          onBlur={() => {}}
           className="flex-1 rounded-xl border p-3"
           placeholder="Write a message"
         />
