@@ -6,8 +6,9 @@ const { sessionMiddleware } = require("./config/session");
 require("./config/passport");
 require("./redis/workers/email-worker");
 const { errorHandler, notFound } = require("./middleware/errors");
-const authRoutes = require("./routes/auth-routes");
 const coloredMorgan = require("./utils/morgan");
+const authRoutes = require("./routes/auth-routes");
+const friendRoutes = require("./routes/friend-routes");
 
 const app = express();
 app.disable("x-powered-by");
@@ -27,6 +28,7 @@ app.use(passport.session());
 app.use(coloredMorgan);
 
 app.use("/api/v1", authRoutes);
+app.use("/api/v1", friendRoutes);
 
 app.use(notFound);
 app.use(errorHandler);
