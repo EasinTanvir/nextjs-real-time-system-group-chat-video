@@ -8,10 +8,8 @@ const { setIO } = require("./lib/socket-instance");
 
 const server = createServer(app);
 
-const { io, connectedUsers } = initSocket(server);
-
+const io = initSocket(server);
 app.set("io", io);
-app.set("connectedUsers", connectedUsers);
 setIO(io);
 
 server.listen(port, () =>
