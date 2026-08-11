@@ -64,7 +64,7 @@ export const SocketProvider = ({ children }) => {
         ),
       );
       setUnread((c) => c + 1);
-      toast(notification.title, { icon: "🔔" });
+      toast.success(notification.title, { icon: "🔔" });
     });
 
     newSocket.on("disconnect", (reason) => {

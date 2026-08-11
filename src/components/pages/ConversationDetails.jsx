@@ -22,7 +22,6 @@ export default function ConversationDetails({ user, conversationId }) {
   const [messages, setMessages] = useState([]);
   const [content, setContent] = useState("");
   const [loading, setLoading] = useState(true);
-  const [sending, setSending] = useState(false);
   const bottomRef = useRef(null);
 
   const currentUserId = String(user?.id);
@@ -59,13 +58,12 @@ export default function ConversationDetails({ user, conversationId }) {
 
     const onNewMessage = ({ message }) => {
       if (String(message.conversationId) !== String(conversationId)) return;
+      if (String(message.senderId) === currentUserId) return; // own messages handled by send()
       setMessages((prev) =>
         prev.some((m) => m.id === message.id) ? prev : [...prev, message],
       );
-      // mark read immediately since conversation is open
       api.post(`/conversations/${conversationId}/read`).catch(() => {});
     };
-
     socket.on("message:new", onNewMessage);
     return () => socket.off("message:new", onNewMessage);
   }, [socket, conversationId]);
@@ -76,10 +74,23 @@ export default function ConversationDetails({ user, conversationId }) {
 
   const send = async (e) => {
     e.preventDefault();
-    if (!content.trim() || sending) return;
+    if (!content.trim()) return;
     const text = content.trim();
     setContent("");
-    setSending(true);
+
+    const tempId = `temp-${Date.now()}`;
+    const optimisticMessage = {
+      id: tempId,
+      conversationId,
+      senderId: user.id,
+      content: text,
+      createdAt: new Date().toISOString(),
+      sender: { id: user.id, username: user.username },
+    };
+
+    // show instantly
+    setMessages((prev) => [...prev, optimisticMessage]);
+
     try {
       const { data } = await api.post(
         `/conversations/${conversationId}/messages`,
@@ -87,18 +98,15 @@ export default function ConversationDetails({ user, conversationId }) {
           content: text,
         },
       );
-      // dedupe: socket echo may arrive first or after this
-      setMessages((prev) =>
-        prev.some((m) => m.id === data.data.id) ? prev : [...prev, data.data],
-      );
+      // swap temp message for the real one
+      setMessages((prev) => prev.map((m) => (m.id === tempId ? data.data : m)));
     } catch (e) {
       toast.error(e.response?.data?.message || e.message);
+      setMessages((prev) => prev.filter((m) => m.id !== tempId)); // rollback
       setContent(text);
     } finally {
-      setSending(false);
     }
   };
-
   if (loading) {
     return (
       <div className="flex flex-1 items-center justify-center">
@@ -155,7 +163,7 @@ export default function ConversationDetails({ user, conversationId }) {
                   isMine
                     ? "rounded-br-sm bg-blue-600 text-white"
                     : "rounded-bl-sm bg-white text-slate-800"
-                }`}
+                } `}
               >
                 <p className="whitespace-pre-wrap break-words">{m.content}</p>
                 <span
@@ -184,10 +192,10 @@ export default function ConversationDetails({ user, conversationId }) {
           placeholder="Write a message"
         />
         <button
-          disabled={sending || !content.trim()}
+          disabled={!content.trim()}
           className="rounded-full bg-blue-600 px-5 py-2.5 text-sm text-white disabled:opacity-50"
         >
-          {sending ? "…" : "Send"}
+          Send
         </button>
       </form>
     </div>
