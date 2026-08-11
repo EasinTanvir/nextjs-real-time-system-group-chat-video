@@ -2,6 +2,7 @@
 import { useEffect, useRef, useState } from "react";
 import toast from "react-hot-toast";
 import api from "@/lib/api";
+import { useSocket } from "@/providers/SocketContext";
 
 function Avatar({ name, size = 32 }) {
   const initial = name?.[0]?.toUpperCase() || "?";
@@ -16,6 +17,7 @@ function Avatar({ name, size = 32 }) {
 }
 
 export default function ConversationDetails({ user, conversationId }) {
+  const { socket } = useSocket();
   const [conversation, setConversation] = useState(null);
   const [messages, setMessages] = useState([]);
   const [content, setContent] = useState("");
@@ -24,10 +26,9 @@ export default function ConversationDetails({ user, conversationId }) {
   const bottomRef = useRef(null);
 
   const currentUserId = String(user?.id);
-  console.log("currentUserId", currentUserId);
-  const scrollToBottom = () => {
+
+  const scrollToBottom = () =>
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
-  };
 
   const load = async () => {
     try {
@@ -52,6 +53,23 @@ export default function ConversationDetails({ user, conversationId }) {
     load();
   }, [conversationId]);
 
+  // real-time incoming messages
+  useEffect(() => {
+    if (!socket) return;
+
+    const onNewMessage = ({ message }) => {
+      if (String(message.conversationId) !== String(conversationId)) return;
+      setMessages((prev) =>
+        prev.some((m) => m.id === message.id) ? prev : [...prev, message],
+      );
+      // mark read immediately since conversation is open
+      api.post(`/conversations/${conversationId}/read`).catch(() => {});
+    };
+
+    socket.on("message:new", onNewMessage);
+    return () => socket.off("message:new", onNewMessage);
+  }, [socket, conversationId]);
+
   useEffect(() => {
     scrollToBottom();
   }, [messages, loading]);
@@ -69,7 +87,10 @@ export default function ConversationDetails({ user, conversationId }) {
           content: text,
         },
       );
-      setMessages((prev) => [...prev, data.data]);
+      // dedupe: socket echo may arrive first or after this
+      setMessages((prev) =>
+        prev.some((m) => m.id === data.data.id) ? prev : [...prev, data.data],
+      );
     } catch (e) {
       toast.error(e.response?.data?.message || e.message);
       setContent(text);
@@ -96,7 +117,6 @@ export default function ConversationDetails({ user, conversationId }) {
 
   return (
     <div className="flex h-full flex-col">
-      {/* Header */}
       <header className="flex items-center gap-3 border-b border-slate-200 bg-white p-4">
         <Avatar name={conversation.otherUser?.username} size={40} />
         <div>
@@ -109,7 +129,6 @@ export default function ConversationDetails({ user, conversationId }) {
         </div>
       </header>
 
-      {/* Messages — only this scrolls */}
       <section className="flex-1 overflow-y-auto bg-slate-50 p-4">
         {!messages.length && (
           <p className="mt-10 text-center text-sm text-slate-400">
@@ -118,7 +137,8 @@ export default function ConversationDetails({ user, conversationId }) {
         )}
 
         {messages.map((m) => {
-          const isMine = String(m.senderId) === currentUserId;
+          const senderId = m.senderId ?? m.sender?.id;
+          const isMine = String(senderId) === currentUserId;
           return (
             <div
               key={m.id}
@@ -139,9 +159,7 @@ export default function ConversationDetails({ user, conversationId }) {
               >
                 <p className="whitespace-pre-wrap break-words">{m.content}</p>
                 <span
-                  className={`mt-1 block text-[10px] ${
-                    isMine ? "text-blue-100" : "text-slate-400"
-                  }`}
+                  className={`mt-1 block text-[10px] ${isMine ? "text-blue-100" : "text-slate-400"}`}
                 >
                   {new Date(m.createdAt).toLocaleTimeString([], {
                     hour: "2-digit",
@@ -155,7 +173,6 @@ export default function ConversationDetails({ user, conversationId }) {
         <div ref={bottomRef} />
       </section>
 
-      {/* Input */}
       <form
         onSubmit={send}
         className="flex items-center gap-2 border-t border-slate-200 bg-white p-3"

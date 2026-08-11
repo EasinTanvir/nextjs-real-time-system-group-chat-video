@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 
 import api from "@/lib/api";
+import { useSocket } from "@/providers/SocketContext";
 
 const navigation = [
   [MessageCircle, "Chats", "/chat"],
@@ -112,42 +113,14 @@ function Sidebar({ close }) {
 
 export default function ChatShell({ children }) {
   const [menuOpen, setMenuOpen] = useState(false);
-  const [notifications, setNotifications] = useState([]);
-  const [unread, setUnread] = useState(0);
+
+  const { notifications, unread, markAllRead } = useSocket();
   const [notificationsOpen, setNotificationsOpen] = useState(false);
-
-  const loadNotifications = async () => {
-    try {
-      const [list, count] = await Promise.all([
-        api.get("/notifications"),
-        api.get("/notifications/unread-count"),
-      ]);
-      setNotifications(list.data.data || []);
-      setUnread(count.data.data.count || 0);
-    } catch {
-      // silent fail — non-critical
-    }
-  };
-
-  useEffect(() => {
-    loadNotifications();
-  }, []);
 
   const openNotifications = async () => {
     const willOpen = !notificationsOpen;
     setNotificationsOpen(willOpen);
-    if (willOpen && unread) {
-      try {
-        await api.post("/notifications/read-all");
-        setNotifications((items) =>
-          items.map((item) => ({
-            ...item,
-            readAt: item.readAt || new Date().toISOString(),
-          })),
-        );
-        setUnread(0);
-      } catch {}
-    }
+    if (willOpen) await markAllRead();
   };
 
   return (

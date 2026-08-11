@@ -1,20 +1,22 @@
 require("dotenv").config();
-const { createServer } = require("node:http");
+const { createServer } = require("http");
 const { app } = require("./app");
 const { port } = require("./config/env");
 const { pool } = require("./db/client");
 const { initSocket } = require("./utils/socket");
+const { setIO } = require("./lib/socket-instance");
 
 const server = createServer(app);
-
-server.listen(port, () =>
-  console.log(`Chat API and real-time server listening on port ${port}`),
-);
 
 const { io, connectedUsers } = initSocket(server);
 
 app.set("io", io);
 app.set("connectedUsers", connectedUsers);
+setIO(io);
+
+server.listen(port, () =>
+  console.log(`Chat API and real-time server listening on port ${port}`),
+);
 
 const shutdown = (signal) => {
   console.log(`${signal} received; shutting down.`);

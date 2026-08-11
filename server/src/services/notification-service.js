@@ -1,9 +1,19 @@
 const { eq, and, desc, isNull } = require("drizzle-orm");
 const { db } = require("../db/client");
 const { notifications } = require("../db/schema");
+const { getIO } = require("../lib/socket-instance");
 
 async function createNotification(data, tx = db) {
   const [n] = await tx.insert(notifications).values(data).returning();
+
+  try {
+    getIO()
+      .to(String(data.recipientId))
+      .emit("notification:new", { notification: n });
+  } catch (err) {
+    console.error("Socket emit failed:", err.message);
+  }
+
   return n;
 }
 

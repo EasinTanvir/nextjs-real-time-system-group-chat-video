@@ -1,18 +1,46 @@
 "use client";
-
 import { createContext, useContext, useEffect, useState } from "react";
 import { io } from "socket.io-client";
-
 import toast from "react-hot-toast";
+import api from "@/lib/api";
 
 const SocketContext = createContext(null);
-const SOCKET_URL = process.env.REACT_APP_SOCKET_URL || "http://localhost:4000";
+const SOCKET_URL = process.env.NEXT_PUBLIC_SOCKET_URL;
 
 export const SocketProvider = ({ children }) => {
   const [socket, setSocket] = useState(null);
   const [isConnected, setIsConnected] = useState(false);
+  const [notifications, setNotifications] = useState([]);
+  const [unread, setUnread] = useState(0);
+
+  const loadNotifications = async () => {
+    try {
+      const [list, count] = await Promise.all([
+        api.get("/notifications"),
+        api.get("/notifications/unread-count"),
+      ]);
+      setNotifications(list.data.data || []);
+      setUnread(count.data.data.count || 0);
+    } catch {}
+  };
+
+  const markAllRead = async () => {
+    if (!unread) return;
+    try {
+      await api.post("/notifications/read-all");
+      setNotifications((items) =>
+        items.map((n) => ({
+          ...n,
+          readAt: n.readAt || new Date().toISOString(),
+        })),
+      );
+      setUnread(0);
+    } catch {}
+  };
 
   useEffect(() => {
+    loadNotifications();
+
     const newSocket = io(SOCKET_URL, {
       withCredentials: true,
       reconnection: true,
@@ -22,69 +50,51 @@ export const SocketProvider = ({ children }) => {
       timeout: 20000,
     });
 
-    // Connection established
-    newSocket.on("connect", () => {
-      console.log("Socket connected:", newSocket.id);
-      setIsConnected(true);
+    newSocket.on("connect", () => setIsConnected(true));
+    newSocket.on("authenticated", (data) =>
+      console.log("Socket authenticated:", data),
+    );
+
+    // real-time notifications
+    newSocket.on("notification:new", ({ notification }) => {
+      setNotifications((prev) =>
+        [notification, ...prev.filter((n) => n.id !== notification.id)].slice(
+          0,
+          20,
+        ),
+      );
+      setUnread((c) => c + 1);
+      toast(notification.title, { icon: "🔔" });
     });
 
-    // Authentication payload confirmed from server
-    newSocket.on("authenticated", (data) => {
-      console.log("Socket authenticated:", data);
-    });
-
-    // Incoming test / notification event
-    newSocket.on("test", (data) => {
-      console.log("Test notification received:", data);
-    });
-
-    // Handle disconnection
     newSocket.on("disconnect", (reason) => {
-      console.log("Socket disconnected:", reason);
       setIsConnected(false);
-
-      if (reason === "io server disconnect") {
-        // Server manually closed connection; reconnect manually if needed
-        newSocket.connect();
-      }
+      if (reason === "io server disconnect") newSocket.connect();
     });
 
-    // Handle authentication or connection failures
     newSocket.on("connect_error", (error) => {
-      console.error("Socket connection error:", error.message);
       setIsConnected(false);
-
       if (
         error.message === "UNAUTHORIZED" ||
         error.message === "TOKEN_EXPIRED"
       ) {
         toast.error("Session expired. Please log in again.");
-        // Stop automatic reconnect attempts on auth failure
         newSocket.io.opts.reconnection = false;
         newSocket.disconnect();
       }
     });
 
-    // Native Socket.IO event when max reconnection attempts are reached
     newSocket.io.on("reconnect_failed", () => {
       toast.error("Failed to connect to notifications. Please refresh.");
     });
 
     setSocket(newSocket);
-
-    // Cleanup on unmount
-    return () => {
-      console.log("Cleaning up socket connection");
-      newSocket.disconnect();
-    };
+    return () => newSocket.disconnect();
   }, []);
 
   return (
     <SocketContext.Provider
-      value={{
-        socket,
-        isConnected,
-      }}
+      value={{ socket, isConnected, notifications, unread, markAllRead }}
     >
       {children}
     </SocketContext.Provider>
@@ -93,8 +103,6 @@ export const SocketProvider = ({ children }) => {
 
 export const useSocket = () => {
   const context = useContext(SocketContext);
-  if (!context) {
-    throw new Error("useSocket must be used within SocketProvider");
-  }
+  if (!context) throw new Error("useSocket must be used within SocketProvider");
   return context;
 };

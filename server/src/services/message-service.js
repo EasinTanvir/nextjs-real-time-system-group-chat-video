@@ -7,6 +7,7 @@ const {
   users,
 } = require("../db/schema");
 const { AppError } = require("../utils/app-error");
+const { getIO } = require("../lib/socket-instance");
 
 async function assertMember(conversationId, userId) {
   const member = await db.query.conversationMembers.findFirst({
@@ -25,19 +26,45 @@ async function sendMessage(conversationId, senderId, content) {
     throw new AppError("Message content required", 400);
   await assertMember(conversationId, senderId);
 
-  return db.transaction(async (tx) => {
-    const [message] = await tx
+  const inserted = await db.transaction(async (tx) => {
+    const [m] = await tx
       .insert(messages)
       .values({ conversationId, senderId, content: content.trim() })
       .returning();
 
     await tx
       .update(conversations)
-      .set({ lastMessageId: message.id, lastMessageAt: message.createdAt })
+      .set({ lastMessageId: m.id, lastMessageAt: m.createdAt })
       .where(eq(conversations.id, conversationId));
 
-    return message;
+    return m;
   });
+
+  // re-fetch with sender relation so shape matches getMessages()
+  const message = await db.query.messages.findFirst({
+    where: eq(messages.id, inserted.id),
+    with: {
+      sender: { columns: { id: true, username: true, avatarUrl: true } },
+    },
+  });
+
+  const members = await db.query.conversationMembers.findMany({
+    where: and(
+      eq(conversationMembers.conversationId, conversationId),
+      isNull(conversationMembers.leftAt),
+    ),
+  });
+
+  try {
+    const io = getIO();
+    for (const member of members) {
+      io.to(String(member.userId)).emit("message:new", { message });
+    }
+  } catch (err) {
+    console.error("Socket emit failed in message:", err.message);
+  }
+
+  return message;
 }
 
 async function getMessages(
