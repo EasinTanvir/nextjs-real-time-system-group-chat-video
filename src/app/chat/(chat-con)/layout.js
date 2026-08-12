@@ -96,6 +96,21 @@ export default function ChatLayout({ children }) {
     socket.on("sidebar:update", onSidebarUpdate);
     return () => socket.off("sidebar:update", onSidebarUpdate);
   }, [socket, activeId]);
+
+  useEffect(() => {
+    if (!socket) return;
+
+    const onConversationRead = ({ conversationId }) => {
+      setItems((prev) =>
+        prev.map((c) =>
+          c.conversationId === conversationId ? { ...c, unreadCount: 0 } : c,
+        ),
+      );
+    };
+
+    socket.on("conversation:read", onConversationRead);
+    return () => socket.off("conversation:read", onConversationRead);
+  }, [socket]);
   return (
     <div className="flex h-full overflow-hidden bg-slate-50">
       <aside className="flex w-full max-w-xs flex-col border-r border-slate-200 bg-white">

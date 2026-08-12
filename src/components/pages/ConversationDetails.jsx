@@ -17,7 +17,8 @@ function Avatar({ name, size = 32 }) {
 }
 
 export default function ConversationDetails({ user, conversationId }) {
-  const { socket } = useSocket();
+  const { socket, onlineUsers } = useSocket();
+
   const [conversation, setConversation] = useState(null);
 
   const [messages, setMessages] = useState([]);
@@ -26,6 +27,9 @@ export default function ConversationDetails({ user, conversationId }) {
   const bottomRef = useRef(null);
 
   const currentUserId = String(user?.id);
+  const isOtherUserOnline = onlineUsers.has(
+    String(conversation?.otherUser?.id),
+  );
 
   const scrollToBottom = () =>
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -144,9 +148,13 @@ export default function ConversationDetails({ user, conversationId }) {
         <Avatar name={conversation.otherUser?.username} size={40} />
         <div>
           <p className="text-xs text-slate-400">
-            {conversation.otherUser?.lastSeenAt
-              ? `Last seen ${new Date(conversation.otherUser.lastSeenAt).toLocaleString()}`
-              : "Offline"}
+            {isOtherUserOnline ? (
+              <span className="text-emerald-500 font-medium">Online</span>
+            ) : conversation.otherUser?.lastSeenAt ? (
+              `Last seen ${new Date(conversation.otherUser.lastSeenAt).toLocaleString()}`
+            ) : (
+              "Offline"
+            )}
           </p>
         </div>
       </header>

@@ -4,6 +4,7 @@ const { sessionMiddleware } = require("../config/session");
 const passport = require("passport");
 const { createRateLimiter } = require("./socket-rate-limiter");
 const { assertMember } = require("../services/message-service");
+const { updateLastSeen } = require("../services/user-service");
 
 const joinLimiter = createRateLimiter({ max: 20, windowMs: 10_000 }); // 20 joins / 10s
 
@@ -18,6 +19,7 @@ function initSocket(server) {
       credentials: true,
     },
   });
+  const connectedUsers = new Map();
 
   // Run Express session and Passport authentication middleware
   io.use(wrap(sessionMiddleware));
@@ -76,10 +78,35 @@ function initSocket(server) {
       socket.leave(`conversation:${conversationId}`);
     });
 
+    const wasOffline = !connectedUsers.has(userId);
+    connectedUsers.set(userId, (connectedUsers.get(userId) || 0) + 1);
+
+    if (wasOffline) {
+      io.emit("presence:update", { userId, status: "online" });
+    }
+
+    socket.emit("authenticated", {
+      userId,
+      socketId: socket.id,
+      timestamp: Date.now(),
+    });
+
     socket.on("disconnect", (reason) => {
       console.log(
         `Socket ${socket.id} (user: ${userId}) disconnected. Reason: ${reason}`,
       );
+      const count = (connectedUsers.get(userId) || 1) - 1;
+      if (count <= 0) {
+        connectedUsers.delete(userId);
+        io.emit("presence:update", {
+          userId,
+          status: "offline",
+          lastSeenAt: new Date().toISOString(),
+        });
+        updateLastSeen(userId); // persist to DB — see below
+      } else {
+        connectedUsers.set(userId, count);
+      }
     });
 
     socket.on("error", (error) => {

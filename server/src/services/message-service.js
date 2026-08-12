@@ -121,6 +121,11 @@ async function markConversationRead(conversationId, userId) {
       ),
     );
 
+  try {
+    getIO().to(userId).emit("conversation:read", { conversationId });
+  } catch (err) {
+    console.error("Socket emit failed:", err.message);
+  }
   return { success: true };
 }
 

@@ -12,6 +12,7 @@ export const SocketProvider = ({ children }) => {
   const [isConnected, setIsConnected] = useState(false);
   const [notifications, setNotifications] = useState([]);
   const [unread, setUnread] = useState(0);
+  const [onlineUsers, setOnlineUsers] = useState(new Set());
 
   const loadNotifications = async () => {
     try {
@@ -51,6 +52,16 @@ export const SocketProvider = ({ children }) => {
     });
 
     newSocket.on("connect", () => setIsConnected(true));
+
+    newSocket.on("presence:update", ({ userId, status }) => {
+      setOnlineUsers((prev) => {
+        const next = new Set(prev);
+        if (status === "online") next.add(userId);
+        else next.delete(userId);
+        return next;
+      });
+    });
+
     newSocket.on("authenticated", (data) =>
       console.log("Socket authenticated:", data),
     );
@@ -94,7 +105,14 @@ export const SocketProvider = ({ children }) => {
 
   return (
     <SocketContext.Provider
-      value={{ socket, isConnected, notifications, unread, markAllRead }}
+      value={{
+        socket,
+        isConnected,
+        notifications,
+        unread,
+        markAllRead,
+        onlineUsers,
+      }}
     >
       {children}
     </SocketContext.Provider>
