@@ -48,20 +48,12 @@ async function sendMessage(conversationId, senderId, content) {
     },
   });
 
-  const members = await db.query.conversationMembers.findMany({
-    where: and(
-      eq(conversationMembers.conversationId, conversationId),
-      isNull(conversationMembers.leftAt),
-    ),
-  });
-
   try {
-    const io = getIO();
-    for (const member of members) {
-      io.to(String(member.userId)).emit("message:new", { message });
-    }
+    getIO()
+      .to(`conversation:${conversationId}`)
+      .emit("message:new", { message });
   } catch (err) {
-    console.error("Socket emit failed in message:", err.message);
+    console.error("Socket emit failed:", err.message);
   }
 
   return message;

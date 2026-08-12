@@ -56,6 +56,14 @@ function initSocket(server) {
     // Join room named after userId (handles multi-device connections natively)
     socket.join(userId);
 
+    socket.on("conversation:join", (conversationId) => {
+      socket.join(`conversation:${conversationId}`);
+    });
+
+    socket.on("conversation:leave", (conversationId) => {
+      socket.leave(`conversation:${conversationId}`);
+    });
+
     console.log(`🔌 Socket connected: ${socket.id} (user: ${userId})`);
 
     // Send confirmation to client

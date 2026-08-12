@@ -107,6 +107,13 @@ export default function ConversationDetails({ user, conversationId }) {
     } finally {
     }
   };
+
+  useEffect(() => {
+    if (!socket) return;
+    socket.emit("conversation:join", conversationId);
+    return () => socket.emit("conversation:leave", conversationId);
+  }, [socket, conversationId]);
+
   if (loading) {
     return (
       <div className="flex flex-1 items-center justify-center">
