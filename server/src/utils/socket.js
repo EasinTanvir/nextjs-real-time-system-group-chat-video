@@ -2,6 +2,9 @@ const { Server } = require("socket.io");
 const { corsOrigin } = require("../config/env");
 const { sessionMiddleware } = require("../config/session");
 const passport = require("passport");
+const { createRateLimiter } = require("./socket-rate-limiter");
+
+const joinLimiter = createRateLimiter({ max: 20, windowMs: 10_000 }); // 20 joins / 10s
 
 // Wrapper to adapt Express middleware for Socket.IO
 const wrap = (middleware) => (socket, next) =>
@@ -79,10 +82,9 @@ function initSocket(server) {
     });
 
     // Handle disconnection
-    socket.on("disconnect", (reason) => {
-      console.log(
-        `Socket ${socket.id} (user: ${userId}) disconnected. Reason: ${reason}`,
-      );
+    socket.on("disconnect", () => {
+      joinLimiter.cleanup?.(socket.id); // optional — see note below
+      console.log(`Socket ${socket.id} (user: ${userId}) disconnected`);
     });
 
     socket.on("error", (error) => {

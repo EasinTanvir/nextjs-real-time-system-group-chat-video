@@ -111,7 +111,14 @@ export default function ConversationDetails({ user, conversationId }) {
   useEffect(() => {
     if (!socket) return;
     socket.emit("conversation:join", conversationId);
-    return () => socket.emit("conversation:leave", conversationId);
+
+    const onError = ({ message }) => toast.error(message);
+    socket.on("error", onError);
+
+    return () => {
+      socket.emit("conversation:leave", conversationId);
+      socket.off("error", onError);
+    };
   }, [socket, conversationId]);
 
   if (loading) {
