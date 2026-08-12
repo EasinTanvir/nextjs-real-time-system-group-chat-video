@@ -135,7 +135,6 @@ export default function ConversationDetails({ user, conversationId }) {
       <header className="flex items-center gap-3 border-b border-slate-200 bg-white p-4">
         <Avatar name={conversation.otherUser?.username} size={40} />
         <div>
-          <h2 className="font-semibold">{conversation.otherUser?.username}</h2>
           <p className="text-xs text-slate-400">
             {conversation.otherUser?.lastSeenAt
               ? `Last seen ${new Date(conversation.otherUser.lastSeenAt).toLocaleString()}`
