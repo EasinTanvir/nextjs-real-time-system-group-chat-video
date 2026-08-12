@@ -53,18 +53,26 @@ export const SocketProvider = ({ children }) => {
 
     newSocket.on("connect", () => setIsConnected(true));
 
+    newSocket.on("authenticated", (data) => {
+      console.log("Socket authenticated:", data);
+      if (Array.isArray(data.onlineUsers)) {
+        setOnlineUsers(new Set(data.onlineUsers));
+      }
+    });
+
     newSocket.on("presence:update", ({ userId, status }) => {
-      setOnlineUsers((prev) => {
-        const next = new Set(prev);
-        if (status === "online") next.add(userId);
-        else next.delete(userId);
-        return next;
+      setOnlineUsers((prevUsers) => {
+        const updated = new Set(prevUsers);
+        if (status === "online") {
+          updated.add(userId);
+        } else if (status === "offline") {
+          updated.delete(userId);
+        }
+        return updated;
       });
     });
 
-    newSocket.on("authenticated", (data) =>
-      console.log("Socket authenticated:", data),
-    );
+    // remove the old presence:snapshot listener entirely
 
     // real-time notifications
     newSocket.on("notification:new", ({ notification }) => {
