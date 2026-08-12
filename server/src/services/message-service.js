@@ -194,4 +194,5 @@ module.exports = {
   markConversationRead,
   listConversations,
   getConversationById,
+  assertMember,
 };

@@ -56,8 +56,13 @@ function initSocket(server) {
     // Join room named after userId (handles multi-device connections natively)
     socket.join(userId);
 
-    socket.on("conversation:join", (conversationId) => {
-      socket.join(`conversation:${conversationId}`);
+    socket.on("conversation:join", async (conversationId) => {
+      try {
+        await assertMember(conversationId, userId); // throws AppError if not a member
+        socket.join(`conversation:${conversationId}`);
+      } catch (err) {
+        socket.emit("error", { message: "Forbidden" });
+      }
     });
 
     socket.on("conversation:leave", (conversationId) => {
