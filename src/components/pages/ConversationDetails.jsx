@@ -62,7 +62,7 @@ export default function ConversationDetails({ user, conversationId }) {
       setMessages((prev) =>
         prev.some((m) => m.id === message.id) ? prev : [...prev, message],
       );
-      api.post(`/conversations/${conversationId}/read`).catch(() => {});
+      //api.post(`/conversations/${conversationId}/read`).catch(() => {});
     };
     socket.on("message:new", onNewMessage);
     return () => socket.off("message:new", onNewMessage);

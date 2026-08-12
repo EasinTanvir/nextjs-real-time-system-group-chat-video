@@ -3,10 +3,10 @@ const { corsOrigin } = require("../config/env");
 const { sessionMiddleware } = require("../config/session");
 const passport = require("passport");
 const { createRateLimiter } = require("./socket-rate-limiter");
+const { assertMember } = require("../services/message-service");
 
 const joinLimiter = createRateLimiter({ max: 20, windowMs: 10_000 }); // 20 joins / 10s
 
-// Wrapper to adapt Express middleware for Socket.IO
 const wrap = (middleware) => (socket, next) =>
   middleware(socket.request, {}, next);
 
@@ -56,19 +56,21 @@ function initSocket(server) {
   io.on("connection", (socket) => {
     const userId = socket.userId;
 
-    // Join room named after userId (handles multi-device connections natively)
     socket.join(userId);
 
     socket.on("conversation:join", async (conversationId) => {
       try {
-        await assertMember(conversationId, userId); // throws AppError if not a member
+        console.log("join conversation");
+        await assertMember(conversationId, userId);
         socket.join(`conversation:${conversationId}`);
       } catch (err) {
+        console.log("error to join", err);
         socket.emit("error", { message: "Forbidden" });
       }
     });
 
     socket.on("conversation:leave", (conversationId) => {
+      console.log("===leave conversation===");
       socket.leave(`conversation:${conversationId}`);
     });
 
