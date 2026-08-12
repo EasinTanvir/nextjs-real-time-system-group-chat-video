@@ -23,7 +23,6 @@ export default function ChatLayout({ children }) {
   const [loading, setLoading] = useState(true);
   const pathname = usePathname();
   const activeId = pathname.split("/chat/conversation/")[1];
-  const { socket } = useSocket();
 
   const load = async () => {
     try {
@@ -40,13 +39,6 @@ export default function ChatLayout({ children }) {
   useEffect(() => {
     load();
   }, []);
-
-  useEffect(() => {
-    if (!socket) return;
-    const onNewMessage = () => load(); // simplest: just refetch list
-    socket.on("message:new", onNewMessage);
-    return () => socket.off("message:new", onNewMessage);
-  }, [socket]);
 
   return (
     <div className="flex h-full overflow-hidden bg-slate-50">
