@@ -23,6 +23,7 @@ export default function ChatLayout({ children }) {
   const [loading, setLoading] = useState(true);
   const pathname = usePathname();
   const activeId = pathname.split("/chat/conversation/")[1];
+  const { socket } = useSocket();
 
   const load = async () => {
     try {
@@ -40,9 +41,73 @@ export default function ChatLayout({ children }) {
     load();
   }, []);
 
+  useEffect(() => {
+    if (!socket) return;
+
+    const onNewMessage = ({ message }) => {
+      const isActiveChat = String(activeId) === String(message.conversationId);
+
+      setItems((prev) => {
+        const exists = prev.some(
+          (c) => c.conversationId === message.conversationId,
+        );
+
+        // conversation not in local list yet (e.g. brand new conversation just created)
+        // — only real fix here is a one-off fetch of just that conversation, not the whole list
+        if (!exists) {
+          fetchSingleConversation(message.conversationId);
+          return prev;
+        }
+
+        const updated = prev.map((c) =>
+          c.conversationId === message.conversationId
+            ? {
+                ...c,
+                lastMessage: {
+                  content: message.content,
+                  createdAt: message.createdAt,
+                },
+                lastMessageAt: message.createdAt,
+                unreadCount: isActiveChat ? 0 : (c.unreadCount || 0) + 1,
+              }
+            : c,
+        );
+
+        return updated.sort(
+          (a, b) =>
+            new Date(b.lastMessageAt || 0) - new Date(a.lastMessageAt || 0),
+        );
+      });
+    };
+
+    const fetchSingleConversation = async (conversationId) => {
+      try {
+        const { data } = await api.get(`/conversations/${conversationId}`);
+        setItems((prev) => {
+          if (prev.some((c) => c.conversationId === conversationId))
+            return prev;
+          return [
+            {
+              conversationId: data.data.id,
+              otherUser: data.data.otherUser,
+              lastMessage: null,
+              lastMessageAt: data.data.lastMessageAt,
+              unreadCount: 1,
+            },
+            ...prev,
+          ];
+        });
+      } catch {
+        // silent — worst case it appears after next full load()
+      }
+    };
+
+    socket.on("message:new", onNewMessage);
+    return () => socket.off("message:new", onNewMessage);
+  }, [socket, activeId]);
+
   return (
     <div className="flex h-full overflow-hidden bg-slate-50">
-      {/* Sidebar */}
       <aside className="flex w-full max-w-xs flex-col border-r border-slate-200 bg-white">
         <div className="flex items-center justify-between border-b border-slate-200 p-4">
           <h1 className="text-xl font-bold">Chats</h1>
@@ -95,7 +160,6 @@ export default function ChatLayout({ children }) {
         </div>
       </aside>
 
-      {/* Main content */}
       <div className="flex flex-1 flex-col overflow-hidden">{children}</div>
     </div>
   );

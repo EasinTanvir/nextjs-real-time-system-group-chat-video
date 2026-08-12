@@ -47,6 +47,7 @@ async function sendMessage(conversationId, senderId, content) {
       sender: { columns: { id: true, username: true, avatarUrl: true } },
     },
   });
+  console.log({ message });
 
   try {
     getIO()
