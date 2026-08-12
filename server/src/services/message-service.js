@@ -40,19 +40,36 @@ async function sendMessage(conversationId, senderId, content) {
     return m;
   });
 
-  // re-fetch with sender relation so shape matches getMessages()
   const message = await db.query.messages.findFirst({
     where: eq(messages.id, inserted.id),
     with: {
       sender: { columns: { id: true, username: true, avatarUrl: true } },
     },
   });
-  console.log({ message });
+
+  const members = await db.query.conversationMembers.findMany({
+    where: and(
+      eq(conversationMembers.conversationId, conversationId),
+      isNull(conversationMembers.leftAt),
+    ),
+    columns: { userId: true },
+  });
 
   try {
-    getIO()
-      .to(`conversation:${conversationId}`)
-      .emit("message:new", { message });
+    const io = getIO();
+
+    // 1. active chat window (only users currently viewing this conversation)
+    io.to(`conversation:${conversationId}`).emit("message:new", { message });
+
+    // 2. sidebar — every member, regardless of what page they're on
+    for (const member of members) {
+      io.to(String(member.userId)).emit("sidebar:update", {
+        conversationId,
+        lastMessage: { content: message.content, createdAt: message.createdAt },
+        senderId: message.senderId,
+        updatedAt: message.createdAt,
+      });
+    }
   } catch (err) {
     console.error("Socket emit failed:", err.message);
   }

@@ -19,6 +19,7 @@ function Avatar({ name, size = 32 }) {
 export default function ConversationDetails({ user, conversationId }) {
   const { socket } = useSocket();
   const [conversation, setConversation] = useState(null);
+
   const [messages, setMessages] = useState([]);
   const [content, setContent] = useState("");
   const [loading, setLoading] = useState(true);
@@ -35,7 +36,7 @@ export default function ConversationDetails({ user, conversationId }) {
       const [c, m] = await Promise.all([
         api.get(`/conversations/${conversationId}`),
         api.get(`/conversations/${conversationId}/messages`, {
-          params: { limit: 100 },
+          params: { limit: 40 },
         }),
       ]);
       setConversation(c.data.data);
@@ -51,22 +52,6 @@ export default function ConversationDetails({ user, conversationId }) {
   useEffect(() => {
     load();
   }, [conversationId]);
-
-  // real-time incoming messages
-  useEffect(() => {
-    if (!socket) return;
-
-    const onNewMessage = ({ message }) => {
-      if (String(message.conversationId) !== String(conversationId)) return;
-      if (String(message.senderId) === currentUserId) return; // own messages handled by send()
-      setMessages((prev) =>
-        prev.some((m) => m.id === message.id) ? prev : [...prev, message],
-      );
-      //api.post(`/conversations/${conversationId}/read`).catch(() => {});
-    };
-    socket.on("message:new", onNewMessage);
-    return () => socket.off("message:new", onNewMessage);
-  }, [socket, conversationId]);
 
   useEffect(() => {
     scrollToBottom();
@@ -110,6 +95,7 @@ export default function ConversationDetails({ user, conversationId }) {
 
   useEffect(() => {
     if (!socket) return;
+
     socket.emit("conversation:join", conversationId);
 
     const onError = ({ message }) => toast.error(message);
@@ -119,6 +105,21 @@ export default function ConversationDetails({ user, conversationId }) {
       socket.emit("conversation:leave", conversationId);
       socket.off("error", onError);
     };
+  }, [socket, conversationId]);
+
+  useEffect(() => {
+    if (!socket) return;
+
+    const onNewMessage = ({ message }) => {
+      if (String(message.conversationId) !== String(conversationId)) return;
+      if (String(message.senderId) === currentUserId) return; // own messages handled by optimistic send()
+      setMessages((prev) =>
+        prev.some((m) => m.id === message.id) ? prev : [...prev, message],
+      );
+    };
+
+    socket.on("message:new", onNewMessage);
+    return () => socket.off("message:new", onNewMessage);
   }, [socket, conversationId]);
 
   if (loading) {

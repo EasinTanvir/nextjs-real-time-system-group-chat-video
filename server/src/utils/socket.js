@@ -55,38 +55,31 @@ function initSocket(server) {
 
   io.on("connection", (socket) => {
     const userId = socket.userId;
-
-    socket.join(userId);
+    socket.join(userId); // personal room — sidebar updates, notifications
 
     socket.on("conversation:join", async (conversationId) => {
+      if (!joinLimiter(socket.id)) {
+        return socket.emit("error", {
+          message: "Too many requests, slow down",
+        });
+      }
+
       try {
-        console.log("join conversation");
         await assertMember(conversationId, userId);
         socket.join(`conversation:${conversationId}`);
       } catch (err) {
-        console.log("error to join", err);
         socket.emit("error", { message: "Forbidden" });
       }
     });
 
     socket.on("conversation:leave", (conversationId) => {
-      console.log("===leave conversation===");
       socket.leave(`conversation:${conversationId}`);
     });
 
-    console.log(`🔌 Socket connected: ${socket.id} (user: ${userId})`);
-
-    // Send confirmation to client
-    socket.emit("authenticated", {
-      userId,
-      socketId: socket.id,
-      timestamp: Date.now(),
-    });
-
-    // Handle disconnection
-    socket.on("disconnect", () => {
-      joinLimiter.cleanup?.(socket.id); // optional — see note below
-      console.log(`Socket ${socket.id} (user: ${userId}) disconnected`);
+    socket.on("disconnect", (reason) => {
+      console.log(
+        `Socket ${socket.id} (user: ${userId}) disconnected. Reason: ${reason}`,
+      );
     });
 
     socket.on("error", (error) => {

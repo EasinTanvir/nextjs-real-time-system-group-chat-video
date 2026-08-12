@@ -44,30 +44,23 @@ export default function ChatLayout({ children }) {
   useEffect(() => {
     if (!socket) return;
 
-    const onNewMessage = ({ message }) => {
-      const isActiveChat = String(activeId) === String(message.conversationId);
+    const onSidebarUpdate = ({ conversationId, lastMessage, updatedAt }) => {
+      const isActiveChat = String(activeId) === String(conversationId);
 
       setItems((prev) => {
-        const exists = prev.some(
-          (c) => c.conversationId === message.conversationId,
-        );
+        const exists = prev.some((c) => c.conversationId === conversationId);
 
-        // conversation not in local list yet (e.g. brand new conversation just created)
-        // — only real fix here is a one-off fetch of just that conversation, not the whole list
         if (!exists) {
-          fetchSingleConversation(message.conversationId);
+          fetchSingleConversation(conversationId);
           return prev;
         }
 
         const updated = prev.map((c) =>
-          c.conversationId === message.conversationId
+          c.conversationId === conversationId
             ? {
                 ...c,
-                lastMessage: {
-                  content: message.content,
-                  createdAt: message.createdAt,
-                },
-                lastMessageAt: message.createdAt,
+                lastMessage,
+                lastMessageAt: updatedAt,
                 unreadCount: isActiveChat ? 0 : (c.unreadCount || 0) + 1,
               }
             : c,
@@ -97,15 +90,12 @@ export default function ChatLayout({ children }) {
             ...prev,
           ];
         });
-      } catch {
-        // silent — worst case it appears after next full load()
-      }
+      } catch {}
     };
 
-    socket.on("message:new", onNewMessage);
-    return () => socket.off("message:new", onNewMessage);
+    socket.on("sidebar:update", onSidebarUpdate);
+    return () => socket.off("sidebar:update", onSidebarUpdate);
   }, [socket, activeId]);
-
   return (
     <div className="flex h-full overflow-hidden bg-slate-50">
       <aside className="flex w-full max-w-xs flex-col border-r border-slate-200 bg-white">
