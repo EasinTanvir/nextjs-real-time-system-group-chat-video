@@ -247,7 +247,7 @@ export default function ConversationDetails({ user, conversationId }) {
         )}
       </header>
 
-      <section className="flex-1 overflow-y-auto p-4">
+      <section className="flex-1 overflow-y-auto p-4 chat-scrollbar">
         {!messages.length && (
           <p className="mt-10 text-center text-[13px] text-ink-soft">
             No messages yet. Say hi 👋
