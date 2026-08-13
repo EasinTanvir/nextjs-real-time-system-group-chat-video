@@ -198,18 +198,22 @@ export default function ChatLayout({ children }) {
             open={groupModalOpen}
             onClose={() => setGroupModalOpen(false)}
             onCreated={(conversation) =>
-              setItems((prev) => [
-                {
-                  conversationId: conversation.id,
-                  type: "group",
-                  name: conversation.name,
-                  memberCount: 0,
-                  otherUser: null,
-                  lastMessage: null,
-                  unreadCount: 0,
-                },
-                ...prev,
-              ])
+              setItems((prev) => {
+                if (prev.some((c) => c.conversationId === conversation.id))
+                  return prev;
+                return [
+                  {
+                    conversationId: conversation.id,
+                    type: "group",
+                    name: conversation.name,
+                    memberCount: 0,
+                    otherUser: null,
+                    lastMessage: null,
+                    unreadCount: 0,
+                  },
+                  ...prev,
+                ];
+              })
             }
           />
         </div>
