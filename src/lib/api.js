@@ -5,23 +5,5 @@ const api = axios.create({
   timeout: 15000,
   withCredentials: true,
 });
-// api.interceptors.request.use((config) => {
-//   const token = getToken();
-//   if (token) config.headers.Authorization = `Bearer ${token}`;
-//   return config;
-// });
-// api.interceptors.response.use(
-//   (response) => response.data.data,
-//   (error) => {
-//     const message =
-//       error.response?.data?.message ||
-//       error.message ||
-//       "Unable to reach the server.";
-//     if (error.response?.status === 401) {
-//       clearToken();
-//       window.dispatchEvent(new Event("chatify:unauthorized"));
-//     }
-//     return Promise.reject(new Error(message));
-//   },
-// );
+
 export default api;
