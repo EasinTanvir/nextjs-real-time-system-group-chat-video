@@ -108,7 +108,7 @@ export const SocketProvider = ({ children }) => {
         error.message === "UNAUTHORIZED" ||
         error.message === "TOKEN_EXPIRED"
       ) {
-        toast.error("Session expired. Please log in again.");
+        //toast.error("Session expired. Please log in again.");
         newSocket.io.opts.reconnection = false;
         newSocket.disconnect();
       }
