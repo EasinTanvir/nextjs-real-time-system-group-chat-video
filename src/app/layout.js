@@ -42,7 +42,6 @@ export default async function RootLayout({ children }) {
           <Navbar isAuthenticated={isAuthenticated} />
           {children}
         </SocketProvider>
-        <Footer />
       </body>
     </html>
   );
