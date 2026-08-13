@@ -239,9 +239,14 @@ export default function ConversationDetails({ user, conversationId }) {
             </p>
           </div>
         </div>
+
         {isGroup && (
           <ActiveMembersDropdown
-            members={conversation.members || []}
+            members={
+              conversation?.members?.filter(
+                (item) => item?.userId !== user?.id,
+              ) || []
+            }
             onlineUsers={onlineUsers}
           />
         )}

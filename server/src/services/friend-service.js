@@ -21,6 +21,13 @@ async function sendFriendRequest(senderId, receiverId) {
   });
   if (!receiver) throw new AppError("User not found", 404);
 
+  const sender = await db.query.users.findFirst({
+    where: eq(users.id, senderId),
+    columns: {
+      username: true,
+    },
+  });
+
   const [userOneId, userTwoId] = [senderId, receiverId].sort();
   const existingFriendship = await db.query.friendships.findFirst({
     where: and(
@@ -67,7 +74,7 @@ async function sendFriendRequest(senderId, receiverId) {
       recipientId: receiverId,
       actorId: senderId,
       type: "friend_request",
-      title: "New friend request",
+      title: `${sender.username} sent you a friend request`,
       description: "You have a new friend request",
     });
     return request;
@@ -88,6 +95,17 @@ async function respondToFriendRequest(requestId, userId, action) {
   if (request.status !== "pending")
     throw new AppError("This request has already been responded to", 409);
 
+  const responder = await db.query.users.findFirst({
+    where: eq(users.id, userId),
+    columns: {
+      username: true,
+    },
+  });
+
+  if (!responder) {
+    throw new AppError("User not found", 404);
+  }
+
   if (action === "reject") {
     const [updated] = await db
       .update(friendRequests)
@@ -99,7 +117,7 @@ async function respondToFriendRequest(requestId, userId, action) {
       recipientId: request.senderId,
       actorId: userId,
       type: "friend_rejected",
-      title: "Friend request rejected",
+      title: `${responder.username} rejected your friend request`,
       description: "Your friend request was rejected",
     });
     return { request: updated };
@@ -157,7 +175,7 @@ async function respondToFriendRequest(requestId, userId, action) {
         actorId: userId,
         conversationId: conversation.id,
         type: "friend_accepted",
-        title: "Friend request accepted",
+        title: `${responder.username} accepted your friend request`,
         description: "Your friend request was accepted",
       },
       tx,
