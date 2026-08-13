@@ -340,6 +340,19 @@ async function discoverUsers(userId) {
   });
 }
 
+async function getFriendIds(userId) {
+  const pairs = await db
+    .select({
+      userOneId: friendships.userOneId,
+      userTwoId: friendships.userTwoId,
+    })
+    .from(friendships)
+    .where(
+      or(eq(friendships.userOneId, userId), eq(friendships.userTwoId, userId)),
+    );
+  return pairs.map((p) => (p.userOneId === userId ? p.userTwoId : p.userOneId));
+}
+
 module.exports = {
   sendFriendRequest,
   respondToFriendRequest,
@@ -348,4 +361,5 @@ module.exports = {
   listOutgoingRequests,
   listFriends,
   discoverUsers,
+  getFriendIds,
 };

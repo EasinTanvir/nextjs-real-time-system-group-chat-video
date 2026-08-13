@@ -145,14 +145,39 @@ async function listConversations(userId) {
     });
     if (!convo) continue;
 
-    const otherUserId =
-      convo.directUserOneId === userId
-        ? convo.directUserTwoId
-        : convo.directUserOneId;
-    const otherUser = await db.query.users.findFirst({
-      where: eq(users.id, otherUserId),
-      columns: { id: true, username: true, avatarUrl: true, lastSeenAt: true },
-    });
+    let name,
+      avatarUrl,
+      memberCount,
+      otherUser = null;
+
+    if (convo.type === "direct") {
+      const otherUserId =
+        convo.directUserOneId === userId
+          ? convo.directUserTwoId
+          : convo.directUserOneId;
+      otherUser = await db.query.users.findFirst({
+        where: eq(users.id, otherUserId),
+        columns: {
+          id: true,
+          username: true,
+          avatarUrl: true,
+          lastSeenAt: true,
+        },
+      });
+      name = otherUser?.username;
+      avatarUrl = otherUser?.avatarUrl;
+      memberCount = 2;
+    } else {
+      name = convo.name;
+      avatarUrl = convo.avatarUrl;
+      const memberRows = await db.query.conversationMembers.findMany({
+        where: and(
+          eq(conversationMembers.conversationId, convo.id),
+          isNull(conversationMembers.leftAt),
+        ),
+      });
+      memberCount = memberRows.length;
+    }
 
     const lastMessage = convo.lastMessageId
       ? await db.query.messages.findFirst({
@@ -170,7 +195,6 @@ async function listConversations(userId) {
           eq(messages.conversationId, convo.id),
           ne(messages.senderId, userId),
         );
-
     const unreadRows = await db
       .select({ count: sql`count(*)` })
       .from(messages)
@@ -179,6 +203,10 @@ async function listConversations(userId) {
 
     results.push({
       conversationId: convo.id,
+      type: convo.type,
+      name,
+      avatarUrl,
+      memberCount,
       otherUser,
       lastMessage,
       lastMessageAt: convo.lastMessageAt,
@@ -199,16 +227,35 @@ async function getConversationById(conversationId, userId) {
   });
   if (!convo) throw new AppError("Conversation not found", 404);
 
-  const otherUserId =
-    convo.directUserOneId === userId
-      ? convo.directUserTwoId
-      : convo.directUserOneId;
-  const otherUser = await db.query.users.findFirst({
-    where: eq(users.id, otherUserId),
-    columns: { id: true, username: true, avatarUrl: true, lastSeenAt: true },
-  });
+  if (convo.type === "direct") {
+    const otherUserId =
+      convo.directUserOneId === userId
+        ? convo.directUserTwoId
+        : convo.directUserOneId;
+    const otherUser = await db.query.users.findFirst({
+      where: eq(users.id, otherUserId),
+      columns: { id: true, username: true, avatarUrl: true, lastSeenAt: true },
+    });
+    return { ...convo, otherUser, memberCount: 2 };
+  }
 
-  return { ...convo, otherUser };
+  const memberRows = await db
+    .select({
+      userId: conversationMembers.userId,
+      role: conversationMembers.role,
+      username: users.username,
+      avatarUrl: users.avatarUrl,
+    })
+    .from(conversationMembers)
+    .innerJoin(users, eq(conversationMembers.userId, users.id))
+    .where(
+      and(
+        eq(conversationMembers.conversationId, conversationId),
+        isNull(conversationMembers.leftAt),
+      ),
+    );
+
+  return { ...convo, members: memberRows, memberCount: memberRows.length };
 }
 
 module.exports = {

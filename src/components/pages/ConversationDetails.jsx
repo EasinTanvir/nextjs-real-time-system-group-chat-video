@@ -145,15 +145,28 @@ export default function ConversationDetails({ user, conversationId }) {
   return (
     <div className="flex h-full flex-col">
       <header className="flex items-center gap-3 border-b border-slate-200 bg-white p-4">
-        <Avatar name={conversation.otherUser?.username} size={40} />
+        <h2 className="font-semibold">
+          {conversation.type === "group" ? (
+            conversation.name
+          ) : (
+            <Avatar name={conversation.otherUser?.username} size={40} />
+          )}
+        </h2>
+
         <div>
           <p className="text-xs text-slate-400">
-            {isOtherUserOnline ? (
-              <span className="text-emerald-500 font-medium">Online</span>
-            ) : conversation.otherUser?.lastSeenAt ? (
-              `Last seen ${new Date(conversation.otherUser.lastSeenAt).toLocaleString()}`
+            {conversation.type === "group" ? (
+              `${conversation.memberCount} members`
             ) : (
-              "Offline"
+              <p className="text-xs text-slate-400">
+                {isOtherUserOnline ? (
+                  <span className="text-emerald-500 font-medium">Online</span>
+                ) : conversation.otherUser?.lastSeenAt ? (
+                  `Last seen ${new Date(conversation.otherUser.lastSeenAt).toLocaleString()}`
+                ) : (
+                  "Offline"
+                )}
+              </p>
             )}
           </p>
         </div>

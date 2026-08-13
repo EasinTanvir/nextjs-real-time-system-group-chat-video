@@ -11,6 +11,7 @@ const authRoutes = require("./routes/auth-routes");
 const friendRoutes = require("./routes/friend-routes");
 const notificationRoutes = require("./routes/notification-routes");
 const conversationRoutes = require("./routes/message-routes");
+const groupRoutes = require("./routes/group-routes");
 
 const app = express();
 app.disable("x-powered-by");
@@ -33,6 +34,7 @@ app.use("/api/v1", authRoutes);
 app.use("/api/v1", friendRoutes);
 app.use("/api/v1", notificationRoutes);
 app.use("/api/v1", conversationRoutes);
+app.use("/api/v1", groupRoutes);
 
 app.use(notFound);
 app.use(errorHandler);

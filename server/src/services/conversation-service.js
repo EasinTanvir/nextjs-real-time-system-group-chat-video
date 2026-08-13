@@ -31,5 +31,23 @@ async function createDirectConversationTx(tx, userAId, userBId) {
 
   return conversation;
 }
+async function createGroupConversationTx(tx, creatorId, name, memberIds) {
+  const allMemberIds = Array.from(new Set([creatorId, ...memberIds]));
 
-module.exports = { createDirectConversationTx };
+  const [conversation] = await tx
+    .insert(conversations)
+    .values({ type: "group", name, createdById: creatorId })
+    .returning();
+
+  await tx.insert(conversationMembers).values(
+    allMemberIds.map((userId) => ({
+      conversationId: conversation.id,
+      userId,
+      role: userId === creatorId ? "owner" : "member",
+    })),
+  );
+
+  return conversation;
+}
+
+module.exports = { createDirectConversationTx, createGroupConversationTx };
