@@ -38,11 +38,11 @@ export default function GroupCreateModal({ open, onClose, onCreated }) {
     if (!name.trim() || selected.size === 0) return;
     setSubmitting(true);
     try {
-      const { data } = await api.post("/groups", {
+      await api.post("/groups", {
         name: name.trim(),
         memberIds: Array.from(selected),
       });
-      onCreated?.(data.data);
+      //onCreated?.(data.data);
       setName("");
       setSelected(new Set());
       onClose();
