@@ -60,6 +60,16 @@ export const SocketProvider = ({ children }) => {
       }
     });
 
+    newSocket.on("friendship:created", ({ newFriendId, isOnline }) => {
+      // tell server to cache this friendId on this specific socket connection
+      newSocket.emit("friendship:added", newFriendId);
+
+      // update local online-users set immediately, no reload needed
+      if (isOnline) {
+        setOnlineUsers((prev) => new Set(prev).add(newFriendId));
+      }
+    });
+
     newSocket.on("presence:update", ({ userId, status }) => {
       setOnlineUsers((prevUsers) => {
         const updated = new Set(prevUsers);

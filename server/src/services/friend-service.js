@@ -9,6 +9,7 @@ const {
 const { AppError } = require("../utils/app-error");
 const { createDirectConversationTx } = require("./conversation-service");
 const { createNotification } = require("./notification-service");
+const { getConnectedUsers, getIO } = require("../lib/socket-instance");
 
 async function sendFriendRequest(senderId, receiverId) {
   if (senderId === receiverId) {
@@ -127,6 +128,28 @@ async function respondToFriendRequest(requestId, userId, action) {
       request.senderId,
       request.receiverId,
     );
+
+    try {
+      const io = getIO();
+      const connectedUsers = getConnectedUsers();
+
+      const isSenderOnline = connectedUsers.has(String(request.senderId));
+      const isReceiverOnline = connectedUsers.has(String(request.receiverId));
+
+      // Notify Receiver about Sender
+      io.to(String(request.receiverId)).emit("friendship:created", {
+        newFriendId: String(request.senderId),
+        isOnline: isSenderOnline,
+      });
+
+      // Notify Sender about Receiver
+      io.to(String(request.senderId)).emit("friendship:created", {
+        newFriendId: String(request.receiverId),
+        isOnline: isReceiverOnline,
+      });
+    } catch (err) {
+      console.error("Failed to emit friendship:created:", err.message);
+    }
 
     await createNotification(
       {

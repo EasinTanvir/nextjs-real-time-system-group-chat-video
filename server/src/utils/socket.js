@@ -6,6 +6,7 @@ const { createRateLimiter } = require("./socket-rate-limiter");
 const { assertMember } = require("../services/message-service");
 const { updateLastSeen } = require("../services/user-service");
 const { getFriendIds } = require("../services/friend-service");
+const { setConnectedUsers } = require("../lib/socket-instance");
 
 const joinLimiter = createRateLimiter({ max: 20, windowMs: 10_000 }); // 20 joins / 10s
 
@@ -21,10 +22,10 @@ function initSocket(server) {
     },
   });
 
-  // Map<userId, socketCount>
   const connectedUsers = new Map();
-  // Map<userId, TimeoutID> for disconnect grace periods
   const disconnectTimers = new Map();
+
+  setConnectedUsers(connectedUsers);
 
   io.use(wrap(sessionMiddleware));
   io.use(wrap(passport.initialize()));
@@ -123,6 +124,12 @@ function initSocket(server) {
 
     socket.on("conversation:leave", (conversationId) => {
       socket.leave(`conversation:${conversationId}`);
+    });
+
+    socket.on("friendship:added", (newFriendId) => {
+      if (!socket.friendIds.includes(newFriendId)) {
+        socket.friendIds.push(newFriendId);
+      }
     });
 
     socket.on("disconnect", (reason) => {
