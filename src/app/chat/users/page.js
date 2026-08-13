@@ -1,7 +1,29 @@
 "use client";
 import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
+import { UserRoundPlus, Clock, Check } from "lucide-react";
 import api from "@/lib/api";
+
+const TONES = [
+  "from-cobalt to-cobalt-deep",
+  "from-coral to-[#E8461F]",
+  "from-ink to-[#3A3F4B]",
+];
+function toneFromName(name = "") {
+  const code = name.charCodeAt(0) || 0;
+  return TONES[code % TONES.length];
+}
+
+function Avatar({ name }) {
+  const initial = name?.[0]?.toUpperCase() || "?";
+  return (
+    <span
+      className={`grid h-11 w-11 shrink-0 place-items-center rounded-full bg-gradient-to-br font-bold text-white ${toneFromName(name)}`}
+    >
+      {initial}
+    </span>
+  );
+}
 
 const UsersPage = () => {
   const [users, setUsers] = useState([]);
@@ -58,9 +80,9 @@ const UsersPage = () => {
       return (
         <button
           onClick={() => sendRequest(u.id)}
-          className="rounded-lg bg-blue-600 px-3 py-1.5 text-sm text-white"
+          className="inline-flex items-center gap-1.5 rounded-lg bg-cobalt px-3.5 py-2 text-[12.5px] font-bold text-white transition hover:bg-cobalt-deep"
         >
-          Add Friend
+          <UserRoundPlus className="h-3.5 w-3.5" /> Add friend
         </button>
       );
     }
@@ -68,9 +90,9 @@ const UsersPage = () => {
       return (
         <button
           onClick={() => cancelRequest(u.requestId)}
-          className="rounded-lg border border-slate-300 px-3 py-1.5 text-sm text-slate-600"
+          className="inline-flex items-center gap-1.5 rounded-lg border border-ink/12 px-3.5 py-2 text-[12.5px] font-semibold text-ink-soft transition hover:border-ink/25 hover:text-ink"
         >
-          Cancel Request
+          <Clock className="h-3.5 w-3.5" /> Cancel request
         </button>
       );
     }
@@ -78,9 +100,9 @@ const UsersPage = () => {
       return (
         <button
           onClick={() => acceptRequest(u.requestId)}
-          className="rounded-lg bg-green-600 px-3 py-1.5 text-sm text-white"
+          className="inline-flex items-center gap-1.5 rounded-lg bg-coral px-3.5 py-2 text-[12.5px] font-bold text-white transition hover:bg-[#E8461F]"
         >
-          Accept Request
+          <Check className="h-3.5 w-3.5" /> Accept request
         </button>
       );
     }
@@ -88,27 +110,58 @@ const UsersPage = () => {
   };
 
   return (
-    <main className="mx-auto max-w-5xl p-5 sm:p-8">
-      <h1 className="text-3xl font-bold">Discover Users</h1>
+    <main className="mx-auto h-full max-w-5xl overflow-y-auto p-5 sm:p-8">
+      <p className="font-mono text-[10.5px] font-bold uppercase tracking-[.08em] text-cobalt">
+        People
+      </p>
+      <h1 className="mt-1 font-display text-[26px] font-bold tracking-[-.03em] text-ink">
+        Discover users
+      </h1>
 
-      {users.map((u) => (
-        <div
-          key={u.id}
-          className="mt-3 flex items-center justify-between rounded-xl border border-slate-200 p-4"
-        >
-          <div>
-            <b>{u.username}</b>
-          </div>
-          {renderAction(u)}
+      {loading && (
+        <div className="mt-5 space-y-2.5">
+          {[0, 1, 2, 3].map((i) => (
+            <div
+              key={i}
+              className="flex animate-pulse items-center gap-3 rounded-xl border border-ink/8 bg-white p-4"
+            >
+              <div className="h-11 w-11 rounded-full bg-paper-deep" />
+              <div className="h-3 w-32 rounded bg-paper-deep" />
+              <div className="ml-auto h-8 w-24 rounded-lg bg-paper-deep" />
+            </div>
+          ))}
         </div>
-      ))}
+      )}
 
-      {loading ? (
-        <p className="mt-8 text-slate-500">Loading users…</p>
-      ) : (
-        !users.length && (
-          <p className="mt-8 text-slate-500">No users to show.</p>
-        )
+      {!loading && (
+        <div className="mt-5 space-y-2.5">
+          {users.map((u) => (
+            <div
+              key={u.id}
+              className="flex items-center justify-between gap-3 rounded-xl border border-ink/8 bg-white p-4 transition hover:border-ink/15"
+            >
+              <div className="flex min-w-0 items-center gap-3">
+                <Avatar name={u.username} />
+                <b className="truncate text-[14px] font-bold text-ink">
+                  {u.username}
+                </b>
+              </div>
+              {renderAction(u)}
+            </div>
+          ))}
+        </div>
+      )}
+
+      {!loading && !users.length && (
+        <div className="mt-14 flex flex-col items-center gap-2 text-center">
+          <span className="grid h-11 w-11 place-items-center rounded-full bg-paper text-ink-soft">
+            <UserRoundPlus className="h-5 w-5" />
+          </span>
+          <p className="text-[13px] font-semibold text-ink">No users to show</p>
+          <p className="text-[12px] text-ink-soft">
+            Check back later — new people join all the time.
+          </p>
+        </div>
       )}
     </main>
   );

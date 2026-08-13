@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import {
   CircleUserRound,
   LogOut,
@@ -14,7 +14,6 @@ import {
   X,
 } from "lucide-react";
 
-import api from "@/lib/api";
 import { useSocket } from "@/providers/SocketContext";
 
 const navigation = [
@@ -30,21 +29,32 @@ function Brand() {
       className="flex items-center gap-2.5"
       aria-label="Chatify home"
     >
-      <span className="grid h-9 w-9 place-items-center rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 text-white shadow-[0_9px_18px_rgba(37,99,235,.25)]">
-        <MessageCircle className="h-5 w-5" strokeWidth={2.4} />
+      <span className="relative grid h-9 w-9 place-items-center rounded-xl bg-ink text-coral">
+        <MessageCircle className="h-[18px] w-[18px]" strokeWidth={2.4} />
+        <span className="absolute -right-0.5 -top-0.5 h-2.5 w-2.5 rounded-full bg-coral ring-2 ring-white" />
       </span>
-      <span className="text-[23px] font-bold tracking-[-.055em] text-slate-900">
+      <span className="font-display text-[21px] font-bold tracking-[-.04em] text-ink">
         Chatify
       </span>
     </Link>
   );
 }
 
-function Avatar({ initials, color, size = "md" }) {
-  const sizes = { sm: "h-7 w-7 text-[8px]", md: "h-9 w-9 text-[10px]" };
+const TONES = [
+  "from-cobalt to-cobalt-deep",
+  "from-coral to-[#E8461F]",
+  "from-ink to-[#3A3F4B]",
+];
+function toneFromName(name = "") {
+  const code = name.charCodeAt(0) || 0;
+  return TONES[code % TONES.length];
+}
+
+function Avatar({ initials, name, size = "md" }) {
+  const sizes = { sm: "h-7 w-7 text-[9px]", md: "h-9 w-9 text-[11px]" };
   return (
     <span
-      className={`grid shrink-0 place-items-center rounded-full bg-gradient-to-br ${color} font-bold text-slate-700 ${sizes[size]}`}
+      className={`grid shrink-0 place-items-center rounded-full bg-gradient-to-br font-bold text-white ${toneFromName(name || initials)} ${sizes[size]}`}
     >
       {initials}
     </span>
@@ -55,19 +65,20 @@ function Sidebar({ close }) {
   const pathname = usePathname();
 
   return (
-    <aside className="flex h-full w-[260px] flex-col border-r border-slate-200/80 bg-white px-5 py-7">
+    <aside className="flex h-full w-[260px] flex-col border-r border-ink/8 bg-white px-5 py-7">
       <div className="flex items-center justify-between">
         <Brand />
         <button
           onClick={close}
-          className="grid h-9 w-9 place-items-center rounded-lg text-slate-500 lg:hidden"
+          className="grid h-9 w-9 place-items-center rounded-lg text-ink-soft lg:hidden"
           aria-label="Close navigation"
         >
           <X className="h-5 w-5" />
         </button>
       </div>
+
       <nav className="mt-9 space-y-1" aria-label="Chat navigation">
-        {navigation.map(([Icon, label, href, count]) => {
+        {navigation.map(([Icon, label, href]) => {
           const active = pathname === href;
           return (
             <Link
@@ -75,36 +86,39 @@ function Sidebar({ close }) {
               href={href}
               onClick={close}
               aria-current={active ? "page" : undefined}
-              className={`flex h-12 items-center gap-4 rounded-xl px-4 text-[15px] font-semibold transition ${active ? "bg-gradient-to-r from-blue-50 to-indigo-50/90 text-blue-600" : "text-slate-700 hover:bg-slate-50 hover:text-blue-600"}`}
+              className={`flex h-12 items-center gap-4 rounded-xl px-4 text-[14.5px] font-semibold transition ${
+                active
+                  ? "bg-cobalt/[.08] text-cobalt"
+                  : "text-ink-soft hover:bg-paper hover:text-ink"
+              }`}
             >
               <Icon className="h-5 w-5" strokeWidth={active ? 2.4 : 2} />
               <span>{label}</span>
-              {count && (
-                <span
-                  className={`ml-auto grid h-6 min-w-6 place-items-center rounded-full px-1 text-xs font-bold ${active ? "bg-blue-100 text-blue-600" : "bg-indigo-100 text-indigo-600"}`}
-                >
-                  {count}
-                </span>
+              {active && (
+                <span className="ml-auto h-1.5 w-1.5 rounded-full bg-cobalt" />
               )}
             </Link>
           );
         })}
       </nav>
-      <div className="mt-auto flex items-center gap-3 border-t border-slate-100 pt-5">
+
+      <div className="mt-auto flex items-center gap-3 border-t border-ink/8 pt-5">
         <span className="relative">
-          <Avatar initials="U" color="from-amber-300 to-orange-200" />
-          <span className="absolute bottom-0 right-0 h-3 w-3 rounded-full border-2 border-white bg-emerald-500" />
+          <Avatar initials="U" size="md" />
+          <span className="absolute bottom-0 right-0 h-3 w-3 rounded-full border-2 border-white bg-coral" />
         </span>
         <div className="min-w-0">
-          <p className="truncate text-sm font-bold text-slate-900">Account</p>
-          <p className="text-xs text-slate-500">Online</p>
+          <p className="truncate text-[13px] font-bold text-ink">Account</p>
+          <p className="font-mono text-[10px] uppercase tracking-[.05em] text-coral">
+            Online
+          </p>
         </div>
         <button
           type="button"
-          className="ml-auto grid h-9 w-9 place-items-center rounded-xl bg-slate-50 text-slate-600 hover:bg-slate-100"
+          className="ml-auto grid h-9 w-9 place-items-center rounded-xl text-ink-soft transition hover:bg-paper hover:text-ink"
           aria-label="Log out"
         >
-          <LogOut className="h-5 w-5" />
+          <LogOut className="h-4.5 w-4.5" />
         </button>
       </div>
     </aside>
@@ -113,7 +127,6 @@ function Sidebar({ close }) {
 
 export default function ChatShell({ children }) {
   const [menuOpen, setMenuOpen] = useState(false);
-
   const { notifications, unread, markAllRead } = useSocket();
   const [notificationsOpen, setNotificationsOpen] = useState(false);
 
@@ -124,14 +137,14 @@ export default function ChatShell({ children }) {
   };
 
   return (
-    <div className="flex h-screen w-full overflow-hidden bg-[#fcfdff] text-slate-900">
+    <div className="flex h-screen w-full overflow-hidden bg-paper text-ink">
       <div className="hidden h-full shrink-0 lg:block">
         <Sidebar close={() => {}} />
       </div>
 
       {menuOpen && (
         <button
-          className="fixed inset-0 z-40 bg-slate-950/20 lg:hidden"
+          className="fixed inset-0 z-40 bg-ink/25 lg:hidden"
           onClick={() => setMenuOpen(false)}
           aria-label="Close navigation overlay"
         />
@@ -142,25 +155,25 @@ export default function ChatShell({ children }) {
         <Sidebar close={() => setMenuOpen(false)} />
       </div>
 
-      {/* Right column: header (fixed height) + content (fills the rest) */}
       <div className="flex h-full min-w-0 flex-1 flex-col">
-        <header className="flex h-[90px] shrink-0 items-center gap-3 border-b border-slate-200/80 bg-white px-4 sm:px-8 lg:px-8">
+        <header className="flex h-[86px] shrink-0 items-center gap-3 border-b border-ink/8 bg-white px-4 sm:px-8 lg:px-8">
           <button
             onClick={() => setMenuOpen(true)}
-            className="grid h-10 w-10 shrink-0 place-items-center rounded-xl border border-slate-200 text-slate-700 lg:hidden"
+            className="grid h-10 w-10 shrink-0 place-items-center rounded-xl border border-ink/10 text-ink-soft lg:hidden"
             aria-label="Open navigation"
           >
             <Menu className="h-5 w-5" />
           </button>
-          <label className="flex h-11 min-w-0 max-w-[770px] flex-1 items-center gap-3 rounded-xl border border-slate-200 bg-slate-50/70 px-4 text-slate-500 shadow-[0_2px_5px_rgba(15,23,42,.02)]">
+
+          <label className="flex h-11 min-w-0 max-w-[770px] flex-1 items-center gap-3 rounded-xl bg-paper px-4 text-ink-soft">
             <CircleUserRound className="h-5 w-5 shrink-0" />
             <input
-              className="min-w-0 flex-1 bg-transparent text-sm text-slate-800 outline-none placeholder:text-slate-500"
+              className="min-w-0 flex-1 bg-transparent text-[13.5px] text-ink outline-none placeholder:text-ink-soft"
               type="search"
               placeholder="Search anything..."
               aria-label="Search anything"
             />
-            <kbd className="hidden rounded-md text-xs font-semibold text-slate-500 sm:inline">
+            <kbd className="hidden font-mono text-[10px] font-semibold text-ink-soft sm:inline">
               ⌘ K
             </kbd>
           </label>
@@ -169,13 +182,13 @@ export default function ChatShell({ children }) {
             <div className="relative">
               <button
                 onClick={openNotifications}
-                className="relative grid h-10 w-10 place-items-center rounded-xl text-slate-600 transition hover:bg-slate-50 hover:text-blue-600"
+                className="relative grid h-10 w-10 place-items-center rounded-xl text-ink-soft transition hover:bg-paper hover:text-cobalt"
                 aria-label="Notifications"
                 aria-expanded={notificationsOpen}
               >
                 <Bell className="h-5 w-5" />
                 {unread > 0 && (
-                  <span className="absolute right-1 top-1 grid min-w-4 place-items-center rounded-full bg-rose-500 px-1 text-[10px] font-bold text-white">
+                  <span className="absolute right-1 top-1 grid min-w-4 place-items-center rounded-full bg-coral px-1 text-[9.5px] font-bold text-white">
                     {unread > 9 ? "9+" : unread}
                   </span>
                 )}
@@ -189,10 +202,10 @@ export default function ChatShell({ children }) {
                     aria-label="Close notifications"
                   />
                   <section
-                    className="absolute right-0 z-30 mt-2 w-80 rounded-xl border border-slate-200 bg-white p-3 shadow-xl"
+                    className="absolute right-0 z-30 mt-2 w-80 rounded-xl border border-ink/8 bg-white p-3 shadow-[0_20px_50px_rgba(20,22,27,.14)]"
                     aria-label="Recent notifications"
                   >
-                    <h2 className="px-2 pb-2 text-sm font-bold">
+                    <h2 className="px-2 pb-2 font-display text-[13.5px] font-bold text-ink">
                       Notifications
                     </h2>
                     <div className="max-h-80 overflow-y-auto">
@@ -200,14 +213,18 @@ export default function ChatShell({ children }) {
                         notifications.map((item) => (
                           <div
                             key={item.id}
-                            className={`rounded-lg px-2 py-2 text-sm ${item.readAt ? "text-slate-600" : "bg-blue-50 text-slate-900"}`}
+                            className={`rounded-lg px-2 py-2 text-[13px] ${
+                              item.readAt
+                                ? "text-ink-soft"
+                                : "bg-cobalt/[.06] text-ink"
+                            }`}
                           >
                             <p className="font-semibold">{item.title}</p>
-                            <p className="text-xs">{item.description}</p>
+                            <p className="text-[11.5px]">{item.description}</p>
                           </div>
                         ))
                       ) : (
-                        <p className="px-2 py-4 text-sm text-slate-500">
+                        <p className="px-2 py-4 text-[13px] text-ink-soft">
                           You&apos;re all caught up.
                         </p>
                       )}
@@ -218,13 +235,12 @@ export default function ChatShell({ children }) {
             </div>
 
             <span className="relative hidden sm:block">
-              <Avatar initials="ET" color="from-amber-300 to-orange-200" />
-              <span className="absolute bottom-0 right-0 h-3 w-3 rounded-full border-2 border-white bg-emerald-500" />
+              <Avatar initials="ET" size="md" />
+              <span className="absolute bottom-0 right-0 h-3 w-3 rounded-full border-2 border-white bg-coral" />
             </span>
           </div>
         </header>
 
-        {/* Content area — fills remaining height, children control their own scroll */}
         <div className="min-h-0 flex-1">{children}</div>
       </div>
     </div>

@@ -5,77 +5,75 @@ import { Menu, MessageCircle } from "lucide-react";
 import Container from "./Container";
 import { logout } from "@/lib/cookies";
 import { usePathname } from "next/navigation";
+
 function BrandMark() {
   return (
-    <span className="grid h-8 w-8 place-items-center rounded-lg bg-gradient-to-br from-blue-500 to-indigo-600 text-white shadow-[0_6px_14px_rgba(37,99,235,.25)]">
+    <span className="relative grid h-9 w-9 place-items-center rounded-xl bg-ink text-coral">
       <MessageCircle className="h-[18px] w-[18px]" strokeWidth={2.4} />
+      <span className="absolute -right-0.5 -top-0.5 h-2.5 w-2.5 rounded-full bg-coral ring-2 ring-paper">
+        <span className="absolute inset-0 animate-ping rounded-full bg-coral opacity-75" />
+      </span>
     </span>
   );
 }
+
+const navLinks = [
+  ["Features", "#features"],
+  ["Presence", "#presence"],
+  ["Pricing", "#pricing"],
+  ["About", "#about"],
+  ["Contact", "#contact"],
+];
 
 export default function Navbar({ isAuthenticated }) {
   const pathname = usePathname();
   if (pathname.startsWith("/chat")) {
     return null;
   }
+
   return (
-    <header className="border-b border-slate-200/80">
+    <header className="border-b border-ink/8 bg-paper/80 backdrop-blur-md">
       <Container>
-        <div className="flex h-[78px] items-center">
-          {/* Logo */}
+        <div className="flex h-[76px] items-center">
           <Link
             href="/"
             aria-label="Chatify home"
-            className="flex items-center gap-2"
+            className="flex items-center gap-2.5"
           >
             <BrandMark />
-
-            <span className="text-[23px] font-bold tracking-[-.06em]">
+            <span className="font-display text-[21px] font-bold tracking-[-.04em] text-ink">
               Chatify
             </span>
           </Link>
 
-          {/* Navigation */}
           <nav
             aria-label="Main navigation"
-            className="mx-auto hidden items-center gap-10 text-[13px] font-medium lg:flex"
+            className="mx-auto hidden items-center gap-9 lg:flex"
           >
-            <Link href="#features" className="transition hover:text-blue-600">
-              Features
-            </Link>
-
-            <Link href="#security" className="transition hover:text-blue-600">
-              Security
-            </Link>
-
-            <Link href="#pricing" className="transition hover:text-blue-600">
-              Pricing
-            </Link>
-
-            <Link href="#about" className="transition hover:text-blue-600">
-              About
-            </Link>
-
-            <Link href="#contact" className="transition hover:text-blue-600">
-              Contact
-            </Link>
+            {navLinks.map(([label, href]) => (
+              <Link
+                key={label}
+                href={href}
+                className="font-mono text-[11px] font-medium uppercase tracking-[.08em] text-ink-soft transition hover:text-ink"
+              >
+                {label}
+              </Link>
+            ))}
           </nav>
 
-          {/* Authentication */}
-          <div className="ml-auto hidden items-center gap-4 sm:flex">
+          <div className="ml-auto hidden items-center gap-5 sm:flex">
             {isAuthenticated ? (
               <>
                 <Link
                   href="/chat"
-                  className="rounded-xl bg-gradient-to-br from-blue-600 to-indigo-600 px-5 py-3 text-[13px] font-bold text-white shadow-[0_10px_20px_rgba(37,99,235,.22)] transition hover:-translate-y-0.5"
+                  className="rounded-xl bg-cobalt px-5 py-3 text-[13px] font-bold text-white shadow-[0_10px_20px_rgba(36,81,255,.25)] transition hover:-translate-y-0.5 hover:bg-cobalt-deep"
                 >
-                  Get Started
+                  Open Chatify
                 </Link>
-
                 <form action={logout}>
                   <button
                     type="submit"
-                    className="text-[13px] font-semibold text-slate-700 transition hover:text-red-600"
+                    className="text-[13px] font-semibold text-ink-soft transition hover:text-coral"
                   >
                     Logout
                   </button>
@@ -85,14 +83,13 @@ export default function Navbar({ isAuthenticated }) {
               <>
                 <Link
                   href="/login"
-                  className="text-[13px] font-semibold transition hover:text-blue-600"
+                  className="text-[13px] font-semibold text-ink transition hover:text-cobalt"
                 >
                   Login
                 </Link>
-
                 <Link
                   href="/register"
-                  className="rounded-xl bg-gradient-to-br from-blue-600 to-indigo-600 px-5 py-3 text-[13px] font-bold text-white shadow-[0_10px_20px_rgba(37,99,235,.22)] transition hover:-translate-y-0.5"
+                  className="rounded-xl bg-cobalt px-5 py-3 text-[13px] font-bold text-white shadow-[0_10px_20px_rgba(36,81,255,.25)] transition hover:-translate-y-0.5 hover:bg-cobalt-deep"
                 >
                   Get Started
                 </Link>
@@ -100,11 +97,10 @@ export default function Navbar({ isAuthenticated }) {
             )}
           </div>
 
-          {/* Mobile Menu */}
           <button
             type="button"
             aria-label="Open menu"
-            className="ml-auto grid h-10 w-10 place-items-center rounded-lg text-slate-700 sm:hidden"
+            className="ml-auto grid h-10 w-10 place-items-center rounded-lg text-ink sm:hidden"
           >
             <Menu className="h-5 w-5" />
           </button>

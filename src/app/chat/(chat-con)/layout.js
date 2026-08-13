@@ -3,23 +3,38 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
+import { MessageCircle, UserPlus, UsersRound } from "lucide-react";
 import api from "@/lib/api";
 import { useSocket } from "@/providers/SocketContext";
 import GroupCreateModal from "@/components/shared/GroupCreateModal";
+
+const TONES = [
+  "from-cobalt to-cobalt-deep",
+  "from-coral to-[#E8461F]",
+  "from-ink to-[#3A3F4B]",
+];
+
+function toneFromName(name = "") {
+  const code = name.charCodeAt(0) || 0;
+  return TONES[code % TONES.length];
+}
 
 function Avatar({ name, size = 40 }) {
   const initial = name?.[0]?.toUpperCase() || "?";
   return (
     <div
       style={{ width: size, height: size }}
-      className="flex shrink-0 items-center justify-center rounded-full bg-blue-600 font-semibold text-white"
+      className={`flex shrink-0 items-center justify-center rounded-full bg-gradient-to-br font-bold text-white ${toneFromName(name)}`}
     >
       {initial}
     </div>
   );
 }
 
-export default function ChatLayout({ children }) {
+// this layout only for two page
+// /chat/page.js
+// /chat/conversation/[converationId]/page.js
+export default function InsideChatLayout({ children }) {
   const [groupModalOpen, setGroupModalOpen] = useState(false);
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -128,35 +143,75 @@ export default function ChatLayout({ children }) {
     socket.on("conversation:new", onConversationNew);
     return () => socket.off("conversation:new", onConversationNew);
   }, [socket]);
-  return (
-    <div className="flex h-full overflow-hidden bg-slate-50">
-      <aside className="flex w-full max-w-xs flex-col border-r border-slate-200 bg-white">
-        <div className="flex items-center justify-between border-b border-slate-200 p-4">
-          <h1 className="text-xl font-bold">Chats</h1>
-          <Link
-            href="/chat/users"
-            className="rounded-lg bg-blue-600 px-3 py-1.5 text-sm text-white"
-          >
-            + New
-          </Link>
 
-          <button
-            onClick={() => setGroupModalOpen(true)}
-            className="rounded-lg bg-blue-600 px-3 py-1.5 text-sm text-white"
-          >
-            + Group
-          </button>
+  const totalUnread = items.reduce((sum, c) => sum + (c.unreadCount || 0), 0);
+
+  return (
+    <div className="flex h-full overflow-hidden bg-paper">
+      <aside className="flex w-full max-w-xs flex-col border-r border-ink/8 bg-white">
+        <div className="border-b border-ink/8 p-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="font-display text-[19px] font-bold tracking-[-.03em] text-ink">
+                Chats
+              </h1>
+              {totalUnread > 0 && (
+                <p className="font-mono text-[10px] uppercase tracking-[.05em] text-coral">
+                  {totalUnread} unread
+                </p>
+              )}
+            </div>
+
+            <div className="flex items-center gap-2">
+              <Link
+                href="/chat/users"
+                title="New chat"
+                className="grid h-9 w-9 place-items-center rounded-lg bg-cobalt text-white transition hover:bg-cobalt-deep"
+              >
+                <UserPlus className="h-4 w-4" />
+              </Link>
+
+              <button
+                onClick={() => setGroupModalOpen(true)}
+                title="New group"
+                className="grid h-9 w-9 place-items-center rounded-lg bg-ink text-white transition hover:bg-ink/85"
+              >
+                <UsersRound className="h-4 w-4" />
+              </button>
+            </div>
+          </div>
         </div>
 
         <div className="flex-1 overflow-y-auto">
           {loading && (
-            <p className="p-4 text-sm text-slate-400">Loading conversations…</p>
+            <div className="space-y-1 p-2">
+              {[0, 1, 2, 3].map((i) => (
+                <div
+                  key={i}
+                  className="flex animate-pulse items-center gap-3 p-2"
+                >
+                  <div className="h-10 w-10 rounded-full bg-paper-deep" />
+                  <div className="flex-1 space-y-2">
+                    <div className="h-2.5 w-2/3 rounded bg-paper-deep" />
+                    <div className="h-2 w-1/2 rounded bg-paper-deep" />
+                  </div>
+                </div>
+              ))}
+            </div>
           )}
 
           {!loading && !items.length && (
-            <p className="p-4 text-sm text-slate-400">
-              No conversations yet. Add friends to start chatting.
-            </p>
+            <div className="flex flex-col items-center gap-2 px-6 py-14 text-center">
+              <span className="grid h-11 w-11 place-items-center rounded-full bg-paper-deep text-ink-soft">
+                <MessageCircle className="h-5 w-5" />
+              </span>
+              <p className="text-[13px] font-semibold text-ink">
+                No conversations yet
+              </p>
+              <p className="text-[11.5px] leading-5 text-ink-soft">
+                Add a friend or start a group to begin chatting.
+              </p>
+            </div>
           )}
 
           {items.map((c) => {
@@ -167,26 +222,34 @@ export default function ChatLayout({ children }) {
               <Link
                 key={c.conversationId}
                 href={`/chat/conversation/${c.conversationId}`}
-                className={`flex items-center gap-3 border-b border-slate-100 p-3 transition hover:bg-slate-50 ${active ? "bg-blue-50" : ""}`}
+                className={`relative flex items-center gap-3 border-b border-ink/6 px-4 py-3 transition ${
+                  active ? "bg-cobalt/[.06]" : "hover:bg-paper"
+                }`}
               >
+                {active && (
+                  <span className="absolute left-0 top-1/2 h-8 w-[3px] -translate-y-1/2 rounded-r-full bg-cobalt" />
+                )}
+
                 <Avatar name={displayName} />
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center justify-between gap-2">
                     <span className="flex min-w-0 items-center gap-1.5">
-                      <b className="truncate text-sm">{displayName}</b>
+                      <b className="truncate text-[13px] font-bold text-ink">
+                        {displayName}
+                      </b>
                       {c.type === "group" && (
-                        <span className="shrink-0 text-xs text-slate-400">
+                        <span className="shrink-0 font-mono text-[9.5px] text-ink-soft">
                           ({c.memberCount})
                         </span>
                       )}
                     </span>
                     {c.unreadCount > 0 && (
-                      <span className="shrink-0 rounded-full bg-blue-600 px-1.5 py-0.5 text-[10px] text-white">
+                      <span className="shrink-0 rounded-full bg-coral px-1.5 py-0.5 text-[10px] font-bold text-white">
                         {c.unreadCount}
                       </span>
                     )}
                   </div>
-                  <p className="truncate text-xs text-slate-500">
+                  <p className="truncate text-[11.5px] text-ink-soft">
                     {c.lastMessage?.content || "No messages yet"}
                   </p>
                 </div>

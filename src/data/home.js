@@ -1,124 +1,103 @@
-import {
-  AtSign,
-  Bookmark,
-  LockKeyhole,
-  MessageCircle,
-  Phone,
-  Settings,
-  ShieldCheck,
-  UsersRound,
-  Zap,
-  Globe2,
-  Send,
-} from "lucide-react";
+export const conversationDemo = {
+  contact: { name: "Maya Chen", initials: "MC", status: "online" },
+  messages: [
+    {
+      from: "them",
+      text: "sent the new mockups, take a look",
+      time: "10:24 AM",
+    },
+    {
+      from: "me",
+      text: "these look great, love the new palette",
+      time: "10:26 AM",
+    },
+  ],
+  typing: true,
+};
+
+export const friendSuggestion = {
+  name: "Owen Park",
+  initials: "OP",
+  mutuals: 4,
+};
+
+export const groupDraft = {
+  name: "Design Crew",
+  members: [{ initials: "MC" }, { initials: "OP" }, { initials: "RS" }],
+  memberCount: 8,
+};
+
+export const statusOptions = [
+  {
+    key: "online",
+    label: "Online",
+    color: "var(--color-coral)",
+    note: "Visible to everyone in your threads.",
+  },
+  {
+    key: "away",
+    label: "Away",
+    color: "var(--color-amber)",
+    note: "Friends see you stepped out, messages still land.",
+  },
+  {
+    key: "offline",
+    label: "Offline",
+    color: "var(--color-ink-soft)",
+    note: "You'll see everything the moment you're back.",
+  },
+];
+
+export const presenceFriends = [
+  { name: "Maya Chen", initials: "MC", status: "online" },
+  { name: "Owen Park", initials: "OP", status: "online" },
+  { name: "Riya Shah", initials: "RS", status: "away" },
+  { name: "Leo Fischer", initials: "LF", status: "offline" },
+];
 
 export const featureCards = [
   {
-    title: "Real-time Messaging",
+    title: "Real-time sync",
     description:
-      "Instant messaging with real-time updates. See when people are typing and stay in sync.",
-    icon: MessageCircle,
-    tone: "bg-blue-100 text-blue-600",
+      "Messages, edits, and reactions land the instant they're sent — no refresh, no delay.",
+    iconKey: "zap",
+    tone: "bg-coral-soft text-coral",
   },
   {
-    title: "Group Conversations",
+    title: "Group threads",
     description:
-      "Create groups, add members, and collaborate together in organized spaces.",
-    icon: UsersRound,
-    tone: "bg-emerald-100 text-emerald-600",
+      "Spin up a group in seconds, pull anyone in from your contacts, keep everyone on one page.",
+    iconKey: "users",
+    tone: "bg-cobalt/10 text-cobalt",
   },
   {
-    title: "Secure & Private",
+    title: "Presence & status",
     description:
-      "End-to-end security keeps your conversations private and your data protected.",
-    icon: LockKeyhole,
-    tone: "bg-amber-100 text-amber-600",
+      "Online, away, or offline — your status updates everywhere the moment it changes.",
+    iconKey: "signal",
+    tone: "bg-amber/15 text-amber",
   },
   {
-    title: "Voice & Video Calls",
+    title: "Private by design",
     description:
-      "High-quality voice and video calls to connect face-to-face, anytime, anywhere.",
-    icon: Phone,
-    tone: "bg-rose-100 text-rose-500",
+      "Conversations are encrypted in transit — only the people in the thread can read them.",
+    iconKey: "lock",
+    tone: "bg-ink/8 text-ink",
   },
 ];
 
-export const conversations = [
-  {
-    name: "Emma Johnson",
-    text: "Hey! How are you doing today?",
-    time: "10:30 AM",
-    initials: "EJ",
-    color: "from-rose-300 to-orange-200",
-    unread: 2,
-  },
-  {
-    name: "Design Team",
-    text: "Alex: Here's the file",
-    time: "9:45 AM",
-    initials: "DT",
-    color: "from-sky-300 to-indigo-300",
-    unread: 1,
-    group: true,
-  },
-  {
-    name: "Liam Wilson",
-    text: "See you tomorrow",
-    time: "9:30 AM",
-    initials: "LW",
-    color: "from-emerald-300 to-teal-200",
-  },
-  {
-    name: "Olivia Brown",
-    text: "Thank you!",
-    time: "Yesterday",
-    initials: "OB",
-    color: "from-pink-300 to-violet-300",
-  },
-  {
-    name: "Noah Davis",
-    text: "Okay!",
-    time: "Yesterday",
-    initials: "ND",
-    color: "from-amber-300 to-orange-300",
-  },
-  {
-    name: "Best Friends",
-    text: "Sarah: It’s movie night!",
-    time: "Yesterday",
-    initials: "BF",
-    color: "from-purple-300 to-fuchsia-300",
-    group: true,
-  },
-  {
-    name: "Project Alpha",
-    text: "You: Great team! 🎉",
-    time: "Mon",
-    initials: "PA",
-    color: "from-cyan-300 to-blue-300",
-    group: true,
-  },
-];
-
-export const favorites = [
-  ["EJ", "Emma Johnson", "from-rose-300 to-orange-200"],
-  ["DT", "Design Team", "from-sky-300 to-indigo-300"],
-  ["BF", "Best Friends", "from-purple-300 to-fuchsia-300"],
-  ["LW", "Liam Wilson", "from-emerald-300 to-teal-200"],
-];
-
-export const navItems = [
-  [MessageCircle, "Inbox", true],
-  [AtSign, "Mentions"],
-  [UsersRound, "Friends"],
-  [UsersRound, "Groups"],
-  [Bookmark, "Bookmarks"],
-  [Settings, "Settings"],
+export const capabilityTags = [
+  "Read receipts",
+  "Typing indicators",
+  "File & image sharing",
+  "Cross-platform sync",
+  "Message reactions",
+  "Voice & video calls",
 ];
 
 export const statistics = [
-  [UsersRound, "50K+", "Active Users"],
-  [Send, "1M+", "Messages Sent"],
-  [Globe2, "99.9%", "Uptime"],
-  [ShieldCheck, "256-bit", "SSL Encryption"],
+  ["zap", "<50ms", "message latency"],
+  ["globe", "180+", "countries"],
+  ["users", "2.4M+", "daily active users"],
+  ["shield", "99.98%", "uptime"],
 ];
