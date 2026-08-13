@@ -1,4 +1,4 @@
-import { currentUser } from "@/lib/currentUser"; // adjust to your actual helper
+import { currentUser } from "@/lib/currentUser";
 import ConversationDetails from "@/components/pages/details/ConversationDetails";
 
 const Conversation = async ({ params }) => {

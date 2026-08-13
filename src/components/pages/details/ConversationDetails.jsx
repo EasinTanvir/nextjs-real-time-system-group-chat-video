@@ -7,7 +7,7 @@ import { useSocket } from "@/providers/SocketContext";
 import { useConversation } from "@/hooks/useConversations";
 import { useConversationMessages } from "@/hooks/useConversationMessages";
 import ActiveMembersDropdown from "./ActiveMembersDropdown";
-import Avatar from "./Avatar";
+import Avatar from "@/components/shared/Avatar";
 
 export default function ConversationDetails({ user, conversationId }) {
   const { socket, onlineUsers } = useSocket();
