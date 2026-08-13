@@ -18,8 +18,30 @@
   --font-mono: var(--font-mono);
 }
 
+@utility bg-dot-grid {
+  background-image: radial-gradient(
+    circle,
+    color-mix(in srgb, var(--color-ink) 16%, transparent) 1.5px,
+    transparent 1.5px
+  );
+  background-size: 22px 22px;
+}
+
+@utility shadow-hard {
+  box-shadow: 4px 4px 0 0 var(--color-ink);
+}
+
+@utility shadow-hard-lg {
+  box-shadow: 8px 8px 0 0 var(--color-ink);
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
 body {
   font-family: var(--font-body), ui-sans-serif, system-ui, sans-serif;
+  overflow-x: hidden;
 }
 
 h1,
@@ -28,4 +50,20 @@ h3,
 h4,
 .font-display {
   font-family: var(--font-display), ui-sans-serif, system-ui, sans-serif;
+}
+
+::selection {
+  background: var(--color-cobalt);
+  color: var(--color-paper);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }

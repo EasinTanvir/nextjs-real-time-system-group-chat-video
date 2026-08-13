@@ -3,6 +3,7 @@ import "./globals.css";
 import Navbar from "@/components/Navbar";
 import { getCookie } from "@/lib/cookies";
 import { SocketProvider } from "@/providers/SocketContext";
+import Footer from "@/components/pages/landing/Footer";
 
 const spaceGrotesk = Space_Grotesk({
   variable: "--font-display",
@@ -41,6 +42,7 @@ export default async function RootLayout({ children }) {
           <Navbar isAuthenticated={isAuthenticated} />
           {children}
         </SocketProvider>
+        <Footer />
       </body>
     </html>
   );
