@@ -1,6 +1,7 @@
 "use server";
 
 import { cookies } from "next/headers";
+import { logoutRequest } from "./logoutRequest";
 
 export async function getCookie(name) {
   const cookieStore = await cookies();
@@ -10,5 +11,12 @@ export async function getCookie(name) {
 export async function logout() {
   const cookieStore = await cookies();
 
-  cookieStore.delete("sid");
+  await logoutRequest();
+
+  cookieStore.set("sid", "", {
+    domain:
+      process.env.NODE_ENV === "production" ? ".easintanvir.com" : undefined,
+    path: "/",
+    maxAge: 0,
+  });
 }

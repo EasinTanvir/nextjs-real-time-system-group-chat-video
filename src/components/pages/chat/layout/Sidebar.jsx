@@ -63,6 +63,7 @@ function Sidebar({ close }) {
           onClick={async () => {
             await logout();
 
+            router.push("/login");
             router.refresh();
           }}
           type="button"
@@ -70,7 +71,6 @@ function Sidebar({ close }) {
           aria-label="Log out"
         >
           <LogOut className="h-4.5 w-4.5" />
-          sds
         </button>
       </div>
     </aside>
