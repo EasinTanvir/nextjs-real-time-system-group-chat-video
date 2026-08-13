@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import toast from "react-hot-toast";
 import { Loader2, Send } from "lucide-react";
 import api from "@/lib/api";
@@ -133,10 +133,9 @@ export default function ConversationDetails({ user, conversationId }) {
   }, [socket, conversationId, currentUserId]);
 
   // Scroll to bottom
-  useEffect(() => {
+  useLayoutEffect(() => {
     scrollToBottom();
-  }, [messages, loading]);
-
+  }, [messages]);
   // Send message
   // POST request stays exactly as it was
   const send = async (e) => {
