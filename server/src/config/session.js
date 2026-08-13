@@ -12,7 +12,8 @@ const sessionMiddleware = session({
   cookie: {
     httpOnly: true,
     secure: isProduction, // true in prod (requires HTTPS)
-    sameSite: isProduction ? "none" : "lax",
+    sameSite: "lax", // 👈 same registrable domain now, lax works
+    domain: isProduction ? ".easintanvir.com" : undefined, // 👈 leading dot, shares across subdomains
     maxAge: 1000 * 60 * 60 * 24 * 7, // 7 days
   },
 });
