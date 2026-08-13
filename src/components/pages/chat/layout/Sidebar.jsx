@@ -1,13 +1,15 @@
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import Brand from "./Brand";
 import { LogOut, X } from "lucide-react";
 import Link from "next/link";
 import Avatar from "./Avatar";
 import { navigation } from "@/lib/navigation";
+import { logout } from "@/lib/cookies";
 
 function Sidebar({ close }) {
   const pathname = usePathname();
 
+  const router = useRouter();
   return (
     <aside className="flex h-full w-[260px] flex-col border-r border-ink/8 bg-white px-5 py-7">
       <div className="flex items-center justify-between">
@@ -58,11 +60,17 @@ function Sidebar({ close }) {
           </p>
         </div>
         <button
+          onClick={async () => {
+            await logout();
+
+            router.refresh();
+          }}
           type="button"
           className="ml-auto grid h-9 w-9 place-items-center rounded-xl text-ink-soft transition hover:bg-paper hover:text-ink"
           aria-label="Log out"
         >
           <LogOut className="h-4.5 w-4.5" />
+          sds
         </button>
       </div>
     </aside>

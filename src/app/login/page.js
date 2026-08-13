@@ -39,10 +39,11 @@ export default function LoginPage() {
       await api.post("/auth/login", values, { withCredentials: true });
 
       toast.success("Welcome back!");
-      router.replace("/chat");
+      router.push("/chat");
+      router.refresh();
     } catch (error) {
       console.log("login error", error);
-      toast.error(error.message);
+      toast.error(error.message || "Login failed");
     }
   };
 

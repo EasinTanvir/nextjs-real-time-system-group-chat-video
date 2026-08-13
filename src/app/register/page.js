@@ -56,6 +56,7 @@ export default function RegisterPage() {
       toast.success("Account created.");
       router.replace("/chat");
     } catch (error) {
+      console.log("register error", error);
       toast.error(error.message);
     }
   };

@@ -5,6 +5,7 @@ import { getCookie } from "@/lib/cookies";
 import { SocketProvider } from "@/providers/SocketContext";
 import Footer from "@/components/pages/landing/Footer";
 import ReactQueryProvider from "@/providers/ReactQueryProvider";
+import { Toaster } from "react-hot-toast";
 
 const spaceGrotesk = Space_Grotesk({
   variable: "--font-display",
@@ -44,6 +45,7 @@ export default async function RootLayout({ children }) {
             <Navbar isAuthenticated={isAuthenticated} />
             {children}
           </ReactQueryProvider>
+          <Toaster position="top-center" />
         </SocketProvider>
       </body>
     </html>
