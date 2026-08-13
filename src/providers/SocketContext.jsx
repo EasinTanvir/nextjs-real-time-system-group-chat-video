@@ -86,6 +86,7 @@ export const SocketProvider = ({ children }) => {
 
     // real-time notifications
     newSocket.on("notification:new", ({ notification }) => {
+      console.log({ notification });
       setNotifications((prev) =>
         [notification, ...prev.filter((n) => n.id !== notification.id)].slice(
           0,

@@ -5,6 +5,7 @@ import { useState } from "react";
 import { Menu, Bell } from "lucide-react";
 import Sidebar from "./Sidebar";
 import Avatar from "./Avatar";
+import Link from "next/link";
 
 const ChatShell = ({ children }) => {
   const [menuOpen, setMenuOpen] = useState(false);
@@ -87,8 +88,12 @@ const ChatShell = ({ children }) => {
                                 : "bg-cobalt/[.06] text-ink"
                             }`}
                           >
-                            <p className="font-semibold">{item.title}</p>
-                            <p className="text-[11.5px]">{item.description}</p>
+                            <Link href="/chat/friends">
+                              <p className="font-semibold">{item.title}</p>
+                              <p className="text-[11.5px]">
+                                {item.description}
+                              </p>{" "}
+                            </Link>
                           </div>
                         ))
                       ) : (

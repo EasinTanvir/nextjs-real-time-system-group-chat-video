@@ -64,7 +64,9 @@ const UsersPage = ({ users = [] }) => {
   };
 
   const renderAction = (u) => {
-    const isLoading = actionLoading && actionLoading === u.id;
+    const loadingId = u.friendStatus === "none" ? u.id : u.requestId;
+
+    const isLoading = actionLoading === loadingId;
 
     if (u.friendStatus === "none") {
       return (
