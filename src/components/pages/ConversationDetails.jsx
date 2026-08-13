@@ -4,6 +4,8 @@ import toast from "react-hot-toast";
 import { Loader2, Send } from "lucide-react";
 import api from "@/lib/api";
 import { useSocket } from "@/providers/SocketContext";
+import { useConversation } from "@/hooks/useConversations";
+import { useConversationMessages } from "@/hooks/useConversationMessages";
 
 const TONES = [
   "from-cobalt to-cobalt-deep",
@@ -73,98 +75,176 @@ function ActiveMembersDropdown({ members, onlineUsers }) {
 
 export default function ConversationDetails({ user, conversationId }) {
   const { socket, onlineUsers } = useSocket();
+
   const [conversation, setConversation] = useState(null);
   const [messages, setMessages] = useState([]);
   const [content, setContent] = useState("");
-  const [loading, setLoading] = useState(true);
   const [sending, setSending] = useState(false);
+
   const bottomRef = useRef(null);
 
   const currentUserId = String(user?.id);
   const isGroup = conversation?.type === "group";
 
+  // TanStack Query - Conversation
+  const {
+    data: conversationData,
+    isLoading: conversationLoading,
+    error: conversationError,
+  } = useConversation(conversationId);
+
+  // TanStack Query - Messages
+  const {
+    data: messagesData = [],
+    isLoading: messagesLoading,
+    error: messagesError,
+  } = useConversationMessages(conversationId);
+
+  const loading = conversationLoading || messagesLoading;
+
   const scrollToBottom = () =>
-    bottomRef.current?.scrollIntoView({ behavior: "smooth" });
+    bottomRef.current?.scrollIntoView({
+      behavior: "smooth",
+    });
 
-  const load = async () => {
-    try {
-      setLoading(true);
-      const [c, m] = await Promise.all([
-        api.get(`/conversations/${conversationId}`),
-        api.get(`/conversations/${conversationId}/messages`, {
-          params: { limit: 100 },
-        }),
-      ]);
-      setConversation(c.data.data);
-      setMessages(m.data.data || []);
-      await api.post(`/conversations/${conversationId}/read`);
-    } catch (e) {
-      toast.error(e.response?.data?.message || e.message);
-    } finally {
-      setLoading(false);
-    }
-  };
-
+  // Sync conversation query data with existing state
   useEffect(() => {
-    load();
-  }, [conversationId]);
+    if (conversationData) {
+      setConversation(conversationData);
+    }
+  }, [conversationData]);
 
+  // Sync messages query data with existing state
+  useEffect(() => {
+    if (messagesData) {
+      setMessages(messagesData);
+    }
+  }, [messagesData]);
+
+  // Handle query errors
+  useEffect(() => {
+    const error = conversationError || messagesError;
+
+    if (!error) return;
+
+    toast.error(
+      error.response?.data?.message ||
+        error.message ||
+        "Failed to load conversation",
+    );
+  }, [conversationError, messagesError]);
+
+  // Mark conversation as read
+  // POST request stays exactly as it was
+  useEffect(() => {
+    if (!conversationId || loading) return;
+
+    const markAsRead = async () => {
+      try {
+        await api.post(`/conversations/${conversationId}/read`);
+      } catch (e) {
+        toast.error(e.response?.data?.message || e.message);
+      }
+    };
+
+    markAsRead();
+  }, [conversationId, loading]);
+
+  // Join conversation socket room
   useEffect(() => {
     if (!socket) return;
+
     socket.emit("conversation:join", conversationId);
-    const onError = ({ message }) => toast.error(message);
+
+    const onError = ({ message }) => {
+      toast.error(message);
+    };
+
     socket.on("error", onError);
+
     return () => {
       socket.emit("conversation:leave", conversationId);
+
       socket.off("error", onError);
     };
   }, [socket, conversationId]);
 
+  // Receive new messages through socket
   useEffect(() => {
     if (!socket) return;
+
     const onNewMessage = ({ message }) => {
-      if (String(message.conversationId) !== String(conversationId)) return;
-      if (String(message.senderId) === currentUserId) return;
+      if (String(message.conversationId) !== String(conversationId)) {
+        return;
+      }
+
+      // Don't add our own message again.
+      // The POST request already handles our message.
+      if (String(message.senderId) === currentUserId) {
+        return;
+      }
+
       setMessages((prev) =>
         prev.some((m) => m.id === message.id) ? prev : [...prev, message],
       );
     };
-    socket.on("message:new", onNewMessage);
-    return () => socket.off("message:new", onNewMessage);
-  }, [socket, conversationId]);
 
+    socket.on("message:new", onNewMessage);
+
+    return () => {
+      socket.off("message:new", onNewMessage);
+    };
+  }, [socket, conversationId, currentUserId]);
+
+  // Scroll to bottom
   useEffect(() => {
     scrollToBottom();
   }, [messages, loading]);
 
+  // Send message
+  // POST request stays exactly as it was
   const send = async (e) => {
     e.preventDefault();
+
     if (!content.trim() || sending) return;
+
     const text = content.trim();
+
     setContent("");
 
     const tempId = `temp-${Date.now()}`;
+
     const optimisticMessage = {
       id: tempId,
       conversationId,
       senderId: user.id,
       content: text,
       createdAt: new Date().toISOString(),
-      sender: { id: user.id, username: user.username },
+      sender: {
+        id: user.id,
+        username: user.username,
+      },
       pending: true,
     };
+
     setMessages((prev) => [...prev, optimisticMessage]);
+
     setSending(true);
 
     try {
       const { data } = await api.post(
         `/conversations/${conversationId}/messages`,
-        { content: text },
+        {
+          content: text,
+        },
       );
+
       setMessages((prev) => prev.map((m) => (m.id === tempId ? data.data : m)));
     } catch (e) {
       toast.error(e.response?.data?.message || e.message);
+
       setMessages((prev) => prev.filter((m) => m.id !== tempId));
+
       setContent(text);
     } finally {
       setSending(false);

@@ -4,6 +4,7 @@ import Navbar from "@/components/Navbar";
 import { getCookie } from "@/lib/cookies";
 import { SocketProvider } from "@/providers/SocketContext";
 import Footer from "@/components/pages/landing/Footer";
+import ReactQueryProvider from "@/providers/ReactQueryProvider";
 
 const spaceGrotesk = Space_Grotesk({
   variable: "--font-display",
@@ -39,8 +40,10 @@ export default async function RootLayout({ children }) {
     >
       <body className="min-h-full flex flex-col bg-paper text-ink">
         <SocketProvider>
-          <Navbar isAuthenticated={isAuthenticated} />
-          {children}
+          <ReactQueryProvider>
+            <Navbar isAuthenticated={isAuthenticated} />
+            {children}
+          </ReactQueryProvider>
         </SocketProvider>
       </body>
     </html>

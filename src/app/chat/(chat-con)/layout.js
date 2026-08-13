@@ -2,11 +2,13 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
-import toast from "react-hot-toast";
+
 import { MessageCircle, UserPlus, UsersRound } from "lucide-react";
 import api from "@/lib/api";
 import { useSocket } from "@/providers/SocketContext";
 import GroupCreateModal from "@/components/shared/GroupCreateModal";
+import { useQueryClient } from "@tanstack/react-query";
+import { useConversations } from "@/hooks/useConversations";
 
 const TONES = [
   "from-cobalt to-cobalt-deep",
@@ -36,35 +38,45 @@ function Avatar({ name, size = 40 }) {
 // /chat/conversation/[converationId]/page.js
 export default function InsideChatLayout({ children }) {
   const [groupModalOpen, setGroupModalOpen] = useState(false);
-  const [items, setItems] = useState([]);
-  const [loading, setLoading] = useState(true);
+
   const pathname = usePathname();
   const activeId = pathname.split("/chat/conversation/")[1];
+
   const { socket } = useSocket();
+  const queryClient = useQueryClient();
 
-  const load = async () => {
-    try {
-      setLoading(true);
-      const { data } = await api.get("/conversations");
-      setItems(data.data || []);
-    } catch (e) {
-      toast.error(e.response?.data?.message || e.message);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    load();
-  }, []);
+  const { data: items = [], isLoading: loading } = useConversations();
 
   useEffect(() => {
     if (!socket) return;
 
+    const fetchSingleConversation = async (conversationId) => {
+      try {
+        const { data } = await api.get(`/conversations/${conversationId}`);
+
+        queryClient.setQueryData(["conversations"], (prev = []) => {
+          if (prev.some((c) => c.conversationId === conversationId)) {
+            return prev;
+          }
+
+          return [
+            {
+              conversationId: data.data.id,
+              otherUser: data.data.otherUser,
+              lastMessage: null,
+              lastMessageAt: data.data.lastMessageAt,
+              unreadCount: 1,
+            },
+            ...prev,
+          ];
+        });
+      } catch {}
+    };
+
     const onSidebarUpdate = ({ conversationId, lastMessage, updatedAt }) => {
       const isActiveChat = String(activeId) === String(conversationId);
 
-      setItems((prev) => {
+      queryClient.setQueryData(["conversations"], (prev = []) => {
         const exists = prev.some((c) => c.conversationId === conversationId);
 
         if (!exists) {
@@ -90,59 +102,57 @@ export default function InsideChatLayout({ children }) {
       });
     };
 
-    const fetchSingleConversation = async (conversationId) => {
-      try {
-        const { data } = await api.get(`/conversations/${conversationId}`);
-        setItems((prev) => {
-          if (prev.some((c) => c.conversationId === conversationId))
-            return prev;
-          return [
-            {
-              conversationId: data.data.id,
-              otherUser: data.data.otherUser,
-              lastMessage: null,
-              lastMessageAt: data.data.lastMessageAt,
-              unreadCount: 1,
-            },
-            ...prev,
-          ];
-        });
-      } catch {}
-    };
-
     socket.on("sidebar:update", onSidebarUpdate);
-    return () => socket.off("sidebar:update", onSidebarUpdate);
-  }, [socket, activeId]);
+
+    return () => {
+      socket.off("sidebar:update", onSidebarUpdate);
+    };
+  }, [socket, activeId, queryClient]);
 
   useEffect(() => {
     if (!socket) return;
 
     const onConversationRead = ({ conversationId }) => {
-      setItems((prev) =>
+      queryClient.setQueryData(["conversations"], (prev = []) =>
         prev.map((c) =>
-          c.conversationId === conversationId ? { ...c, unreadCount: 0 } : c,
+          c.conversationId === conversationId
+            ? {
+                ...c,
+                unreadCount: 0,
+              }
+            : c,
         ),
       );
     };
 
     socket.on("conversation:read", onConversationRead);
-    return () => socket.off("conversation:read", onConversationRead);
-  }, [socket]);
+
+    return () => {
+      socket.off("conversation:read", onConversationRead);
+    };
+  }, [socket, queryClient]);
 
   useEffect(() => {
     if (!socket) return;
 
     const onConversationNew = ({ conversation }) => {
-      setItems((prev) => {
-        if (prev.some((c) => c.conversationId === conversation.conversationId))
+      queryClient.setQueryData(["conversations"], (prev = []) => {
+        if (
+          prev.some((c) => c.conversationId === conversation.conversationId)
+        ) {
           return prev;
+        }
+
         return [conversation, ...prev];
       });
     };
 
     socket.on("conversation:new", onConversationNew);
-    return () => socket.off("conversation:new", onConversationNew);
-  }, [socket]);
+
+    return () => {
+      socket.off("conversation:new", onConversationNew);
+    };
+  }, [socket, queryClient]);
 
   const totalUnread = items.reduce((sum, c) => sum + (c.unreadCount || 0), 0);
 
