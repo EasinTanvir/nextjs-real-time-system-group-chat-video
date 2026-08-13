@@ -4,27 +4,7 @@ import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
 import { MessageCircle, UsersRound, Check, X as XIcon } from "lucide-react";
 import api from "@/lib/api";
-
-const TONES = [
-  "from-cobalt to-cobalt-deep",
-  "from-coral to-[#E8461F]",
-  "from-ink to-[#3A3F4B]",
-];
-function toneFromName(name = "") {
-  const code = name.charCodeAt(0) || 0;
-  return TONES[code % TONES.length];
-}
-
-function Avatar({ name }) {
-  const initial = name?.[0]?.toUpperCase() || "?";
-  return (
-    <span
-      className={`grid h-11 w-11 shrink-0 place-items-center rounded-full bg-gradient-to-br font-bold text-white ${toneFromName(name)}`}
-    >
-      {initial}
-    </span>
-  );
-}
+import Avatar from "@/components/shared/Avatar";
 
 const FriendPage = () => {
   const [friends, setFriends] = useState([]);
