@@ -31,7 +31,7 @@ export default function ConversationDetails({ user, conversationId }) {
 
   // TanStack Query - Messages
   const {
-    data: messagesData = [],
+    data: messagesData,
     isLoading: messagesLoading,
     error: messagesError,
   } = useConversationMessages(conversationId);
