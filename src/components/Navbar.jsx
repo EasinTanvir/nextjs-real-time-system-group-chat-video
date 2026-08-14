@@ -8,8 +8,9 @@ import { usePathname } from "next/navigation";
 const Navbar = ({ isAuthenticated = false }) => {
   const pathName = usePathname();
   const [open, setOpen] = useState(false);
-
-  if (pathName.includes("/chat")) return null;
+  const paths = ["/chat", "/login", "/register"];
+  console.log({ pathName });
+  if (paths.includes(pathName)) return null;
 
   return (
     <header className="relative z-[100] bg-[#f8fafc]">
