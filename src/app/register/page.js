@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
 import api from "@/lib/api";
 import { useForm } from "react-hook-form";
+
 import AuthField from "@/components/auth/auth-field";
 import AuthPageShell from "@/components/auth/auth-page-shell";
 
@@ -47,17 +48,22 @@ export default function RegisterPage() {
     register,
     handleSubmit,
     formState: { errors, isSubmitting },
-  } = useForm({ mode: "onTouched", reValidateMode: "onChange" });
+  } = useForm({
+    mode: "onTouched",
+    reValidateMode: "onChange",
+  });
 
   const onSubmit = async (values) => {
     try {
-      const result = await api.post("/auth/register", values);
+      await api.post("/auth/register", values);
 
       toast.success("Account created.");
+
       router.replace("/chat");
     } catch (error) {
       console.log("register error", error);
-      toast.error(error.response.data.message || "register failed");
+
+      toast.error(error.response?.data?.message || "Registration failed");
     }
   };
 
@@ -78,6 +84,7 @@ export default function RegisterPage() {
             setValueAs: (value) => value.trim(),
           })}
         />
+
         <AuthField
           id="email"
           label="Email address"
@@ -87,6 +94,7 @@ export default function RegisterPage() {
           error={errors.email}
           registration={register("email", emailRules)}
         />
+
         <AuthField
           id="password"
           label="Password"
@@ -96,19 +104,31 @@ export default function RegisterPage() {
           error={errors.password}
           registration={register("password", passwordRules)}
         />
+
         <button
           type="submit"
           disabled={isSubmitting}
-          className="mt-4 flex h-12 w-full items-center justify-center rounded-xl bg-gradient-to-br from-blue-600 to-indigo-600 px-5 text-sm font-bold text-white shadow-[0_10px_20px_rgba(37,99,235,.23)] transition hover:-translate-y-0.5 hover:shadow-[0_12px_24px_rgba(37,99,235,.30)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 disabled:cursor-not-allowed disabled:opacity-70 disabled:hover:translate-y-0"
+          className="mt-5 flex h-12 w-full items-center justify-center rounded-xl bg-gradient-to-r from-cyan-500 to-emerald-500 px-5 text-sm font-bold text-white shadow-[0_10px_25px_rgba(16,185,129,0.18)] transition-all hover:-translate-y-0.5 hover:shadow-[0_14px_30px_rgba(16,185,129,0.24)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-500 disabled:cursor-not-allowed disabled:opacity-70 disabled:hover:translate-y-0"
         >
-          {isSubmitting ? "Checking details..." : "Create account"}
+          {isSubmitting ? "Creating account..." : "Create account"}
         </button>
       </form>
-      <p className="mt-7 text-center text-sm text-slate-500">
+
+      <div className="my-7 flex items-center gap-3">
+        <div className="h-px flex-1 bg-slate-100" />
+
+        <span className="font-mono text-[9px] uppercase tracking-[0.14em] text-slate-300">
+          Chatify
+        </span>
+
+        <div className="h-px flex-1 bg-slate-100" />
+      </div>
+
+      <p className="text-center text-sm text-slate-500">
         Already have an account?{" "}
         <Link
           href="/login"
-          className="font-bold text-blue-600 transition hover:text-indigo-600 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600"
+          className="font-bold text-emerald-600 transition hover:text-emerald-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-500"
         >
           Log in
         </Link>
