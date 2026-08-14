@@ -40,6 +40,7 @@ function Sidebar({ close }) {
 
           return (
             <Link
+              prefetch
               key={label}
               href={href}
               onClick={close}

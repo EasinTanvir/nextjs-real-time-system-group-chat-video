@@ -37,6 +37,7 @@ function ChatList({ items, loading, totalUnread, activeId, onGroupOpen }) {
           <div className="flex items-center gap-2">
             {/* New chat */}
             <Link
+              prefetch
               href="/chat/users"
               title="New chat"
               className="grid h-9 w-9 place-items-center rounded-lg bg-cobalt text-white transition hover:bg-cobalt-deep"

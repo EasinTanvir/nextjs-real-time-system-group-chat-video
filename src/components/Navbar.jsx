@@ -8,10 +8,18 @@ import { usePathname } from "next/navigation";
 const Navbar = ({ isAuthenticated = false }) => {
   const pathName = usePathname();
   const [open, setOpen] = useState(false);
-  const paths = ["/chat", "/login", "/register"];
+  const paths = [
+    "/chat",
+    "/login",
+    "/register",
+    "/chat/users",
+    "/chat/friends",
+    "/chat/conversation",
+  ];
   console.log({ pathName });
-  if (paths.includes(pathName)) return null;
-
+  if (paths.includes(pathName) || pathName.startsWith("/chat/conversation/")) {
+    return null;
+  }
   return (
     <header className="relative z-[100] bg-[#f8fafc]">
       <nav className="mx-auto max-w-7xl px-5 pt-4 sm:pt-6 lg:px-8">

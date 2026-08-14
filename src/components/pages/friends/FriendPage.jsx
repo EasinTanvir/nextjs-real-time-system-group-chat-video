@@ -158,6 +158,7 @@ const Friend = ({ friendData, incoming = [] }) => {
 
             {f.conversationId && (
               <Link
+                prefetch
                 href={`/chat/conversation/${f.conversationId}`}
                 className="inline-flex items-center gap-1.5 rounded-lg bg-cobalt px-3.5 py-2 text-[12.5px] font-bold text-white transition hover:bg-cobalt-deep"
               >

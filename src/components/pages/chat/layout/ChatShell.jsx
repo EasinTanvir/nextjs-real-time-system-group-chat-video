@@ -11,6 +11,7 @@ import Avatar from "./Avatar";
 const ChatLogo = () => {
   return (
     <Link
+      prefetch
       href="/"
       className="group flex items-center gap-2.5"
       aria-label="Chatify home"
