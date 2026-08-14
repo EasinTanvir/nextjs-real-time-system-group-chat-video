@@ -19,8 +19,15 @@ const ChatDetailsLayout = ({ children }) => {
 
   const { socket } = useSocket();
   const queryClient = useQueryClient();
+  const [items, setItems] = useState([]);
 
-  const { data: items = [], isLoading: loading } = useConversations();
+  const { data, isLoading: loading } = useConversations();
+
+  useEffect(() => {
+    if (data) {
+      setItems(data);
+    }
+  }, [data]);
 
   useEffect(() => {
     if (!socket) return;
@@ -128,6 +135,19 @@ const ChatDetailsLayout = ({ children }) => {
       socket.off("conversation:new", onConversationNew);
     };
   }, [socket, queryClient]);
+
+  useEffect(() => {
+    if (!socket) return;
+    const onMembersAdded = ({ conversationId, memberCount }) => {
+      setItems((prev) =>
+        prev.map((c) =>
+          c.conversationId === conversationId ? { ...c, memberCount } : c,
+        ),
+      );
+    };
+    socket.on("group:members-added", onMembersAdded);
+    return () => socket.off("group:members-added", onMembersAdded);
+  }, [socket]);
 
   const totalUnread = items.reduce((sum, c) => sum + (c.unreadCount || 0), 0);
 
@@ -245,24 +265,24 @@ const ChatDetailsLayout = ({ children }) => {
           <GroupCreateModal
             open={groupModalOpen}
             onClose={() => setGroupModalOpen(false)}
-            // onCreated={(conversation) =>
-            //   setItems((prev) => {
-            //     if (prev.some((c) => c.conversationId === conversation.id))
-            //       return prev;
-            //     return [
-            //       {
-            //         conversationId: conversation.id,
-            //         type: "group",
-            //         name: conversation.name,
-            //         memberCount: 0,
-            //         otherUser: null,
-            //         lastMessage: null,
-            //         unreadCount: 0,
-            //       },
-            //       ...prev,
-            //     ];
-            //   })
-            // }
+            onCreated={(conversation) =>
+              setItems((prev) => {
+                if (prev.some((c) => c.conversationId === conversation.id))
+                  return prev;
+                return [
+                  {
+                    conversationId: conversation.id,
+                    type: "group",
+                    name: conversation.name,
+                    memberCount: 0,
+                    otherUser: null,
+                    lastMessage: null,
+                    unreadCount: 0,
+                  },
+                  ...prev,
+                ];
+              })
+            }
           />
         </div>
       </aside>

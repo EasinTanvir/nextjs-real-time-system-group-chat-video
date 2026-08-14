@@ -188,6 +188,37 @@ export default function ConversationDetails({ user, conversationId }) {
     }
   };
 
+  useEffect(() => {
+    if (!socket) return;
+    const onMembersAdded = ({
+      conversationId: cid,
+      addedUsers,
+      memberCount,
+    }) => {
+      if (String(cid) !== String(conversationId)) return;
+      setConversation((prev) => {
+        if (!prev) return prev;
+        const existingIds = new Set((prev.members || []).map((m) => m.userId));
+        const newMembers = addedUsers.filter((u) => !existingIds.has(u.id));
+        return {
+          ...prev,
+          memberCount,
+          members: [
+            ...(prev.members || []),
+            ...newMembers.map((u) => ({
+              userId: u.id,
+              username: u.username,
+              avatarUrl: u.avatarUrl,
+              role: "member",
+            })),
+          ],
+        };
+      });
+    };
+    socket.on("group:members-added", onMembersAdded);
+    return () => socket.off("group:members-added", onMembersAdded);
+  }, [socket, conversationId]);
+
   if (loading) {
     return (
       <div className="flex flex-1 items-center justify-center bg-paper">
