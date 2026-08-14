@@ -57,7 +57,7 @@ export default function RegisterPage() {
       router.replace("/chat");
     } catch (error) {
       console.log("register error", error);
-      toast.error(error.message);
+      toast.error(error.response.data.message || "register failed");
     }
   };
 
