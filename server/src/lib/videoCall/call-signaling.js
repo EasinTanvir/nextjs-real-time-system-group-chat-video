@@ -8,6 +8,7 @@ const {
   otherParty,
 } = require("./call-store");
 const { assertMember } = require("../../services/message-service");
+const { logCallMessage } = require("../../services/call-service");
 
 const RING_TIMEOUT_MS = 30_000;
 const ringTimers = new Map(); // callId -> timeout handle
@@ -101,12 +102,26 @@ function registerCallHandlers(io, socket) {
     io.to(String(call.calleeId)).emit("call:cancelled", { callId });
   });
 
-  socket.on("call:end", ({ callId }) => {
+  // in call:end handler
+  socket.on("call:end", async ({ callId }) => {
     const call = getCall(callId);
     if (!call || (call.callerId !== userId && call.calleeId !== userId)) return;
     clearRingTimer(callId);
     endCall(callId);
     io.to(String(otherParty(call, userId))).emit("call:ended", { callId });
+
+    if (call.startedAt) {
+      const durationSeconds = Math.round((Date.now() - call.startedAt) / 1000);
+      await logCallMessage({
+        conversationId: call.conversationId,
+        callerId: call.callerId,
+        type: call.type,
+        durationSeconds,
+        wasAnswered: true,
+      }).catch((err) =>
+        console.error("Failed to log call message:", err.message),
+      );
+    }
   });
 
   // --- Pure WebRTC signaling relay — server never parses SDP/ICE, just forwards ---
@@ -152,7 +167,7 @@ function registerCallHandlers(io, socket) {
 
   // --- Cleanup on disconnect ---
 
-  socket.on("disconnect", () => {
+  socket.on("disconnect", async () => {
     const call = getActiveCallForUser(userId);
     if (!call) return;
     clearRingTimer(call.callId);
@@ -161,6 +176,19 @@ function registerCallHandlers(io, socket) {
       callId: call.callId,
       reason: "peer_disconnected",
     });
+
+    if (call.startedAt) {
+      const durationSeconds = Math.round((Date.now() - call.startedAt) / 1000);
+      await logCallMessage({
+        conversationId: call.conversationId,
+        callerId: call.callerId,
+        type: call.type,
+        durationSeconds,
+        wasAnswered: true,
+      }).catch((err) =>
+        console.error("Failed to log call message:", err.message),
+      );
+    }
   });
 }
 

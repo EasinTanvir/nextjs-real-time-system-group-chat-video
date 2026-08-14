@@ -28,10 +28,12 @@ function getActiveCallForUser(userId) {
 
 function updateCallStatus(callId, status) {
   const call = activeCalls.get(callId);
-  if (call) call.status = status;
+  if (call) {
+    call.status = status;
+    if (status === "connecting" && !call.startedAt) call.startedAt = Date.now();
+  }
   return call || null;
 }
-
 function endCall(callId) {
   const call = activeCalls.get(callId);
   if (!call) return null;
