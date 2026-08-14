@@ -22,7 +22,7 @@ const item = {
 
 const Hero = () => {
   const fetchData = async () => {
-    await api.get(process.env.NEXT_PUBLIC_API_URL);
+    await api.get(`${process.env.NEXT_PUBLIC_API_URL}/test`);
   };
 
   useEffect(() => {

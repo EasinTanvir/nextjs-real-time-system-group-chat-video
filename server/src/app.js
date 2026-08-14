@@ -30,7 +30,7 @@ app.use(passport.initialize());
 app.use(passport.session());
 app.use(coloredMorgan);
 
-app.use("/api/v1", (req, res) => {
+app.use("/api/v1/test", (req, res) => {
   console.log("server connected");
   return res.json("server connected");
 });
