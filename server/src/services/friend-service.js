@@ -195,6 +195,50 @@ async function respondToFriendRequest(requestId, userId, action) {
         friend: { id: request.senderId },
         conversationId: conversation.id,
       });
+
+      // NEW — tell both sidebars a conversation now exists
+      const senderInfo = await db.query.users.findFirst({
+        where: eq(users.id, request.senderId),
+        columns: {
+          id: true,
+          username: true,
+          avatarUrl: true,
+          lastSeenAt: true,
+        },
+      });
+      const receiverInfo = await db.query.users.findFirst({
+        where: eq(users.id, userId),
+        columns: {
+          id: true,
+          username: true,
+          avatarUrl: true,
+          lastSeenAt: true,
+        },
+      });
+
+      io.to(String(request.senderId)).emit("conversation:new", {
+        conversation: {
+          conversationId: conversation.id,
+          type: "direct",
+          otherUser: receiverInfo,
+          memberCount: 2,
+          lastMessage: null,
+          lastMessageAt: null,
+          unreadCount: 0,
+        },
+      });
+
+      io.to(String(userId)).emit("conversation:new", {
+        conversation: {
+          conversationId: conversation.id,
+          type: "direct",
+          otherUser: senderInfo,
+          memberCount: 2,
+          lastMessage: null,
+          lastMessageAt: null,
+          unreadCount: 0,
+        },
+      });
     } catch (err) {
       console.error("Failed to emit friendship:created:", err.message);
     }
