@@ -1,4 +1,4 @@
-const { createGroup } = require("../services/group-service");
+const { createGroup, addGroupMembers } = require("../services/group-service");
 
 async function createGroupHandler(req, res, next) {
   try {
@@ -10,4 +10,18 @@ async function createGroupHandler(req, res, next) {
   }
 }
 
-module.exports = { createGroupHandler };
+async function addMembersHandler(req, res, next) {
+  try {
+    const { memberIds } = req.body;
+    const result = await addGroupMembers(
+      req.params.conversationId,
+      req.user.id,
+      memberIds,
+    );
+    res.status(200).json({ success: true, data: result });
+  } catch (err) {
+    next(err);
+  }
+}
+
+module.exports = { createGroupHandler, addMembersHandler };

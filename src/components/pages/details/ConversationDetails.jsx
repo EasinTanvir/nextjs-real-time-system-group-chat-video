@@ -1,13 +1,14 @@
 "use client";
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import toast from "react-hot-toast";
-import { Loader2, Send } from "lucide-react";
+import { Loader2, Send, UserPlus } from "lucide-react";
 import api from "@/lib/api";
 import { useSocket } from "@/providers/SocketContext";
 import { useConversation } from "@/hooks/useConversations";
 import { useConversationMessages } from "@/hooks/useConversationMessages";
 import ActiveMembersDropdown from "./ActiveMembersDropdown";
 import Avatar from "@/components/shared/Avatar";
+import AddMembersModal from "@/components/shared/AddMembersModal";
 
 export default function ConversationDetails({ user, conversationId }) {
   const { socket, onlineUsers } = useSocket();
@@ -16,6 +17,7 @@ export default function ConversationDetails({ user, conversationId }) {
   const [messages, setMessages] = useState([]);
   const [content, setContent] = useState("");
   const [sending, setSending] = useState(false);
+  const [addMembersOpen, setAddMembersOpen] = useState(false);
 
   const bottomRef = useRef(null);
 
@@ -241,14 +243,23 @@ export default function ConversationDetails({ user, conversationId }) {
         </div>
 
         {isGroup && (
-          <ActiveMembersDropdown
-            members={
-              conversation?.members?.filter(
-                (item) => item?.userId !== user?.id,
-              ) || []
-            }
-            onlineUsers={onlineUsers}
-          />
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => setAddMembersOpen(true)}
+              className="grid h-9 w-9 place-items-center rounded-xl text-slate-600 hover:bg-slate-100"
+              title="Add members"
+            >
+              <UserPlus className="h-4 w-4" />
+            </button>
+            <ActiveMembersDropdown
+              members={
+                conversation?.members?.filter(
+                  (item) => item?.userId !== user?.id,
+                ) || []
+              }
+              onlineUsers={onlineUsers}
+            />
+          </div>
         )}
       </header>
 
@@ -324,6 +335,28 @@ export default function ConversationDetails({ user, conversationId }) {
           )}
         </button>
       </form>
+
+      <AddMembersModal
+        open={addMembersOpen}
+        onClose={() => setAddMembersOpen(false)}
+        conversationId={conversationId}
+        existingMemberIds={(conversation.members || []).map((m) => m.userId)}
+        onAdded={({ addedUsers, memberCount }) => {
+          setConversation((prev) => ({
+            ...prev,
+            memberCount,
+            members: [
+              ...(prev.members || []),
+              ...addedUsers.map((u) => ({
+                userId: u.id,
+                username: u.username,
+                avatarUrl: u.avatarUrl,
+                role: "member",
+              })),
+            ],
+          }));
+        }}
+      />
     </div>
   );
 }
