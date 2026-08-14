@@ -94,9 +94,25 @@ export class WebRTCPeer {
   }
 }
 
+//  AFTER (Updated with smooth audio settings)
 export async function getLocalStream(type) {
-  return navigator.mediaDevices.getUserMedia({
-    audio: true,
-    video: type === "video" ? { width: 640, height: 480 } : false,
-  });
+  const constraints = {
+    audio: {
+      echoCancellation: { ideal: true },
+      noiseSuppression: { ideal: true },
+      autoGainControl: { ideal: true },
+      channelCount: { ideal: 1 }, // Mono audio for crystal clear speech
+      sampleRate: { ideal: 48000 }, // High quality 48kHz sampling
+    },
+    video:
+      type === "video"
+        ? {
+            width: { ideal: 1280 },
+            height: { ideal: 720 },
+            facingMode: "user",
+          }
+        : false,
+  };
+
+  return await navigator.mediaDevices.getUserMedia(constraints);
 }
