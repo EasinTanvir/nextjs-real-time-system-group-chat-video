@@ -61,6 +61,8 @@ function initSocket(server) {
 
   io.on("connection", async (socket) => {
     const userId = socket.userId;
+    console.log("userId===", socket.userId);
+    console.log("connectedUsers", connectedUsers);
     registerCallHandlers(io, socket);
 
     // Personal room for this user
@@ -126,6 +128,7 @@ function initSocket(server) {
     });
 
     socket.on("conversation:leave", (conversationId) => {
+      console.log("conversation:leave====", conversationId);
       socket.leave(`conversation:${conversationId}`);
     });
 

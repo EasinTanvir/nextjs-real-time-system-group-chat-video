@@ -85,18 +85,38 @@ export default function ConversationDetails({ user, conversationId }) {
   }, [conversationId, loading]);
 
   useEffect(() => {
-    if (!socket) return;
+    if (!socket || !conversationId) return;
 
-    socket.emit("conversation:join", conversationId);
+    const joinRoom = () => {
+      console.log("Emitting conversation:join for:", conversationId);
+      socket.emit("conversation:join", conversationId);
+    };
+
+    // 1. Try joining immediately if socket is connected
+    if (socket.connected) {
+      joinRoom();
+    }
+
+    // 2. Listen for native connect
+    socket.on("connect", joinRoom);
+
+    // 3. Listen for your backend's custom "authenticated" event (Fires on reload after session check)
+    socket.on("authenticated", joinRoom);
 
     const onError = ({ message }) => {
+      console.log("conversation error:", message);
       toast.error(message);
     };
 
     socket.on("error", onError);
 
     return () => {
-      socket.emit("conversation:leave", conversationId);
+      console.log("conversation leaving");
+      if (socket.connected) {
+        socket.emit("conversation:leave", conversationId);
+      }
+      socket.off("connect", joinRoom);
+      socket.off("authenticated", joinRoom);
       socket.off("error", onError);
     };
   }, [socket, conversationId]);
@@ -105,14 +125,11 @@ export default function ConversationDetails({ user, conversationId }) {
     if (!socket) return;
 
     const onNewMessage = ({ message }) => {
-      if (String(message.conversationId) !== String(conversationId)) {
-        return;
-      }
-
-      if (String(message.senderId) === currentUserId) {
-        return;
-      }
-
+      console.log({ message });
+      if (String(message.conversationId) !== String(conversationId)) return;
+      const isOwnRegularMessage =
+        String(message.senderId) === currentUserId && !message.isSystemMessage;
+      if (isOwnRegularMessage) return; // still skip own regular messages (handled optimistically)
       setMessages((prev) =>
         prev.some((m) => m.id === message.id) ? prev : [...prev, message],
       );

@@ -42,7 +42,7 @@ async function logCallMessage({
   try {
     getIO()
       .to(`conversation:${conversationId}`)
-      .emit("message:new", { message });
+      .emit("message:new", { message: { ...message, isSystemMessage: true } });
     // reuse your existing sidebar fanout pattern
   } catch (err) {
     console.error("Socket emit failed:", err.message);
