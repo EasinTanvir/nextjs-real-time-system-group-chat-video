@@ -14,9 +14,7 @@ export const SocketProvider = ({ children }) => {
   const [notifications, setNotifications] = useState([]);
   const [unread, setUnread] = useState(0);
   const [onlineUsers, setOnlineUsers] = useState(new Set());
-  const pathName = usePathname();
-  const isChatPage = pathName.includes("/chat");
-  console.log({ isChatPage });
+
   const loadNotifications = async () => {
     try {
       const [list, count] = await Promise.all([
@@ -43,8 +41,6 @@ export const SocketProvider = ({ children }) => {
   };
 
   useEffect(() => {
-    if (!isChatPage) return;
-
     loadNotifications();
 
     const newSocket = io(SOCKET_URL, {
@@ -126,7 +122,7 @@ export const SocketProvider = ({ children }) => {
 
     setSocket(newSocket);
     return () => newSocket.disconnect();
-  }, [pathName]);
+  }, []);
 
   return (
     <SocketContext.Provider

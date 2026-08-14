@@ -107,6 +107,7 @@ function initSocket(server) {
     });
 
     socket.on("conversation:join", async (conversationId) => {
+      console.log("conversation:join====", conversationId);
       if (!joinLimiter(socket.id)) {
         return socket.emit("error", {
           message: "Too many requests, slow down",
