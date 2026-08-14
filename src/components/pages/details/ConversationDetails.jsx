@@ -5,6 +5,7 @@ import {
   ArrowLeft,
   Loader2,
   Menu,
+  MessageCircle,
   Phone,
   Send,
   UserPlus,
@@ -257,35 +258,47 @@ export default function ConversationDetails({ user, conversationId }) {
     !isGroup && onlineUsers.has(String(conversation.otherUser?.id));
 
   return (
-    <div className="flex flex-1 h-full flex-col ">
-      <header className="flex items-center justify-between gap-3 border-b border-ink/8 bg-white p-4">
-        <div className="flex items-center gap-3">
+    <div className="flex h-full min-h-0 flex-1 flex-col overflow-hidden bg-[#f8fafc]">
+      {/* ===================================================== */}
+      {/* Conversation Header */}
+      {/* ===================================================== */}
+
+      <header className="flex shrink-0 items-center justify-between gap-3 border-b border-slate-200/80 bg-white/95 px-3 py-3 backdrop-blur-xl sm:px-5">
+        <div className="flex min-w-0 items-center gap-3">
+          {/* Mobile back */}
           <button
             type="button"
             onClick={() => router.push("/chat")}
-            className="grid h-9 w-9 shrink-0 place-items-center rounded-xl text-ink-soft transition hover:bg-paper hover:text-ink md:hidden"
+            className="grid h-9 w-9 shrink-0 place-items-center rounded-xl text-slate-500 transition hover:bg-slate-50 hover:text-slate-950 md:hidden"
             aria-label="Back to conversations"
           >
-            <ArrowLeft className="h-5 w-5" />
+            <ArrowLeft className="h-[18px] w-[18px]" />
           </button>
 
-          <span className="relative">
+          {/* Avatar */}
+          <span className="relative shrink-0">
             <Avatar name={headerName} size={40} />
+
             {!isGroup && isOtherUserOnline && (
-              <span className="absolute -bottom-0.5 -right-0.5 h-2.5 w-2.5 rounded-full bg-coral ring-2 ring-white" />
+              <span className="absolute -bottom-0.5 -right-0.5 h-3 w-3 rounded-full border-2 border-white bg-emerald-500" />
             )}
           </span>
-          <div>
-            <h2 className="font-display text-[15px] font-bold text-ink">
+
+          {/* Name + status */}
+          <div className="min-w-0">
+            <h2 className="truncate font-display text-[14px] font-bold tracking-[-.01em] text-slate-950 sm:text-[15px]">
               {headerName}
             </h2>
-            <p className="font-mono text-[10.5px] uppercase tracking-[.03em] text-ink-soft">
+
+            <p className="mt-0.5 truncate text-[10px] font-medium uppercase tracking-[.07em] text-slate-400">
               {isGroup ? (
                 `${conversation.memberCount} members`
               ) : isOtherUserOnline ? (
-                <span className="text-coral">Online</span>
+                <span className="text-emerald-500">Online</span>
               ) : conversation.otherUser?.lastSeenAt ? (
-                `Last seen ${new Date(conversation.otherUser.lastSeenAt).toLocaleString()}`
+                `Last seen ${new Date(
+                  conversation.otherUser.lastSeenAt,
+                ).toLocaleString()}`
               ) : (
                 "Offline"
               )}
@@ -293,15 +306,21 @@ export default function ConversationDetails({ user, conversationId }) {
           </div>
         </div>
 
+        {/* ================================================= */}
+        {/* Header Actions */}
+        {/* ================================================= */}
+
         {isGroup && (
-          <div className="flex items-center gap-2">
+          <div className="flex shrink-0 items-center gap-1.5">
             <button
               onClick={() => setAddMembersOpen(true)}
-              className="grid h-9 w-9 place-items-center rounded-xl text-slate-600 hover:bg-slate-100"
+              className="grid h-9 w-9 place-items-center rounded-xl text-slate-500 transition hover:bg-slate-50 hover:text-slate-950"
               title="Add members"
+              type="button"
             >
-              <UserPlus className="h-4 w-4" />
+              <UserPlus className="h-[17px] w-[17px]" />
             </button>
+
             <ActiveMembersDropdown
               members={
                 conversation?.members?.filter(
@@ -314,7 +333,8 @@ export default function ConversationDetails({ user, conversationId }) {
         )}
 
         {!isGroup && (
-          <div className="ml-auto flex gap-2">
+          <div className="ml-auto flex shrink-0 items-center gap-1.5">
+            {/* Audio call */}
             <button
               onClick={() =>
                 startCall({
@@ -324,10 +344,14 @@ export default function ConversationDetails({ user, conversationId }) {
                   type: "audio",
                 })
               }
-              className="grid h-10 w-10 place-items-center rounded-xl text-slate-600 hover:bg-slate-100"
+              type="button"
+              className="grid h-9 w-9 place-items-center rounded-xl text-slate-500 transition hover:bg-emerald-50 hover:text-emerald-600"
+              aria-label="Start audio call"
             >
-              <Phone className="h-5 w-5" />
+              <Phone className="h-[17px] w-[17px]" />
             </button>
+
+            {/* Video call */}
             <button
               onClick={() =>
                 startCall({
@@ -337,49 +361,77 @@ export default function ConversationDetails({ user, conversationId }) {
                   type: "video",
                 })
               }
-              className="grid h-10 w-10 place-items-center rounded-xl text-slate-600 hover:bg-slate-100"
+              type="button"
+              className="grid h-9 w-9 place-items-center rounded-xl text-slate-500 transition hover:bg-cyan-50 hover:text-cyan-600"
+              aria-label="Start video call"
             >
-              <Video className="h-5 w-5" />
+              <Video className="h-[17px] w-[17px]" />
             </button>
           </div>
         )}
       </header>
 
-      <section className="flex-1 overflow-y-auto p-4 chat-scrollbar">
+      {/* ===================================================== */}
+      {/* Messages */}
+      {/* ===================================================== */}
+
+      <section className="min-h-0 flex-1 overflow-y-auto bg-[#f8fafc] px-3 py-5 sm:px-6 sm:py-6 chat-scrollbar">
         {!messages.length && (
-          <p className="mt-10 text-center text-[13px] text-ink-soft">
-            No messages yet. Say hi 👋
-          </p>
+          <div className="flex flex-col items-center justify-center pt-16 text-center">
+            <div className="grid h-12 w-12 place-items-center rounded-2xl bg-white text-slate-400 shadow-[0_4px_20px_rgba(15,23,42,0.05)]">
+              <MessageCircle className="h-5 w-5" />
+            </div>
+
+            <p className="mt-4 text-sm font-semibold text-slate-700">
+              No messages yet
+            </p>
+
+            <p className="mt-1 text-xs text-slate-400">
+              Say hi and start the conversation 👋
+            </p>
+          </div>
         )}
 
         {messages.map((m) => {
           const senderId = m.senderId ?? m.sender?.id;
+
           const isMine = String(senderId) === currentUserId;
+
           return (
             <div
               key={m.id}
-              className={`mb-3 flex items-end gap-2 ${isMine ? "flex-row-reverse" : ""}`}
+              className={`mb-4 flex items-end gap-2 ${
+                isMine ? "flex-row-reverse" : ""
+              }`}
             >
+              {/* Avatar */}
               <Avatar
                 name={isMine ? user?.username : m.sender?.username}
                 size={28}
               />
-              <div className="flex max-w-[70%] flex-col">
+
+              <div className="flex max-w-[82%] flex-col sm:max-w-[70%]">
+                {/* Group sender */}
                 {!isMine && isGroup && (
-                  <span className="mb-0.5 ml-1 text-[10.5px] font-bold text-ink-soft">
+                  <span className="mb-1 ml-1 text-[10px] font-bold text-slate-400">
                     {m.sender?.username}
                   </span>
                 )}
+
+                {/* Bubble */}
                 <div
                   className={`rounded-2xl px-4 py-2.5 text-[13px] leading-5 ${
                     isMine
-                      ? "rounded-br-sm bg-cobalt text-white"
-                      : "rounded-bl-sm bg-white text-ink shadow-[0_1px_2px_rgba(20,22,27,.06)]"
+                      ? "rounded-br-md bg-gradient-to-br from-cyan-500 to-emerald-500 text-white shadow-[0_5px_15px_rgba(16,185,129,0.12)]"
+                      : "rounded-bl-md border border-slate-200/80 bg-white text-slate-800 shadow-[0_3px_12px_rgba(15,23,42,0.04)]"
                   } ${m.pending ? "opacity-60" : ""}`}
                 >
                   <p className="whitespace-pre-wrap break-words">{m.content}</p>
+
                   <span
-                    className={`mt-1 block text-[9.5px] font-mono ${isMine ? "text-white/70" : "text-ink-soft"}`}
+                    className={`mt-1 block text-[9px] font-mono ${
+                      isMine ? "text-white/65" : "text-slate-400"
+                    }`}
                   >
                     {m.pending
                       ? "Sending…"
@@ -393,30 +445,44 @@ export default function ConversationDetails({ user, conversationId }) {
             </div>
           );
         })}
+
         <div ref={bottomRef} />
       </section>
 
+      {/* ===================================================== */}
+      {/* Message Composer */}
+      {/* ===================================================== */}
+
       <form
         onSubmit={send}
-        className="flex items-center gap-2 border-t border-ink/8 bg-white p-3"
+        className="shrink-0 border-t border-slate-200/80 bg-white p-3 sm:p-4"
       >
-        <input
-          value={content}
-          onChange={(e) => setContent(e.target.value)}
-          className="flex-1 rounded-full border border-ink/10 bg-paper px-4 py-2.5 text-[13px] text-ink placeholder:text-ink-soft focus:outline-none focus:ring-2 focus:ring-cobalt/40"
-          placeholder="Write a message"
-        />
-        <button
-          disabled={sending || !content.trim()}
-          className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-cobalt text-white transition hover:bg-cobalt-deep disabled:opacity-40"
-        >
-          {sending ? (
-            <Loader2 className="h-4 w-4 animate-spin" />
-          ) : (
-            <Send className="h-4 w-4" />
-          )}
-        </button>
+        <div className="mx-auto flex w-full max-w-5xl items-center gap-2">
+          <input
+            value={content}
+            onChange={(e) => setContent(e.target.value)}
+            className="h-11 min-w-0 flex-1 rounded-xl border border-slate-200 bg-[#f8fafc] px-4 text-[13px] text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-emerald-300 focus:bg-white focus:ring-4 focus:ring-emerald-500/10"
+            placeholder="Write a message..."
+          />
+
+          <button
+            disabled={sending || !content.trim()}
+            type="submit"
+            className="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-gradient-to-br from-cyan-500 to-emerald-500 text-white shadow-[0_7px_18px_rgba(16,185,129,0.18)] transition hover:-translate-y-0.5 hover:shadow-[0_10px_22px_rgba(16,185,129,0.24)] disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:translate-y-0"
+            aria-label="Send message"
+          >
+            {sending ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : (
+              <Send className="h-4 w-4" />
+            )}
+          </button>
+        </div>
       </form>
+
+      {/* ===================================================== */}
+      {/* Add Members */}
+      {/* ===================================================== */}
 
       <AddMembersModal
         open={addMembersOpen}

@@ -18,31 +18,47 @@ export const useChatList = () => useContext(ChatListContext);
 
 function ChatList({ items, loading, totalUnread, activeId, onGroupOpen }) {
   return (
-    <div className="flex h-full min-h-0 flex-col">
+    <div className="flex h-full min-h-0 flex-col bg-white">
+      {/* ================================================= */}
       {/* Header */}
-      <div className="shrink-0 border-b border-ink/8 p-4">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="font-display text-[19px] font-bold tracking-[-.03em] text-ink">
+      {/* ================================================= */}
+
+      <div className="shrink-0 border-b border-slate-200/80 bg-white px-4 py-4 sm:px-5">
+        <div className="flex items-center justify-between gap-3">
+          <div className="min-w-0">
+            <h1 className="font-display text-[19px] font-bold tracking-[-.035em] text-slate-950">
               Conversations
             </h1>
 
-            {totalUnread > 0 && (
-              <p className="mt-0.5 font-mono text-[10px] uppercase tracking-[.05em] text-coral">
-                {totalUnread} unread
+            {totalUnread > 0 ? (
+              <div className="mt-1 flex items-center gap-1.5">
+                <span className="relative flex h-1.5 w-1.5">
+                  <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-60" />
+
+                  <span className="relative h-1.5 w-1.5 rounded-full bg-emerald-500" />
+                </span>
+
+                <p className="font-mono text-[9.5px] font-medium uppercase tracking-[.08em] text-emerald-600">
+                  {totalUnread} unread
+                </p>
+              </div>
+            ) : (
+              <p className="mt-1 text-[11px] text-slate-400">
+                Your recent conversations
               </p>
             )}
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex shrink-0 items-center gap-1.5">
             {/* New chat */}
             <Link
               prefetch
               href="/chat/users"
               title="New chat"
-              className="grid h-9 w-9 place-items-center rounded-lg bg-cobalt text-white transition hover:bg-cobalt-deep"
+              aria-label="Start a new chat"
+              className="group grid h-9 w-9 place-items-center rounded-xl bg-gradient-to-br from-cyan-500 to-emerald-500 text-white shadow-[0_6px_16px_rgba(16,185,129,0.16)] transition-all hover:-translate-y-0.5 hover:shadow-[0_9px_20px_rgba(16,185,129,0.22)]"
             >
-              <UserPlus className="h-4 w-4" />
+              <UserPlus className="h-[16px] w-[16px] transition-transform group-hover:scale-105" />
             </Link>
 
             {/* New group */}
@@ -50,29 +66,33 @@ function ChatList({ items, loading, totalUnread, activeId, onGroupOpen }) {
               type="button"
               onClick={onGroupOpen}
               title="New group"
-              className="grid h-9 w-9 place-items-center rounded-lg bg-ink text-white transition hover:bg-ink/85"
+              aria-label="Create a new group"
+              className="grid h-9 w-9 place-items-center rounded-xl bg-slate-950 text-white transition-all hover:-translate-y-0.5 hover:bg-slate-800"
             >
-              <UsersRound className="h-4 w-4" />
+              <UsersRound className="h-[16px] w-[16px]" />
             </button>
           </div>
         </div>
       </div>
 
+      {/* ================================================= */}
       {/* Conversation list */}
+      {/* ================================================= */}
+
       <div className="min-h-0 flex-1 overflow-y-auto">
         {/* Loading */}
         {loading && (
-          <div className="space-y-1 p-2">
+          <div className="space-y-1.5 p-2">
             {[0, 1, 2, 3, 4].map((i) => (
               <div
                 key={i}
-                className="flex animate-pulse items-center gap-3 rounded-xl p-3"
+                className="flex animate-pulse items-center gap-3 rounded-xl px-3 py-3"
               >
-                <div className="h-10 w-10 shrink-0 rounded-full bg-paper-deep" />
+                <div className="h-10 w-10 shrink-0 rounded-full bg-slate-100" />
 
-                <div className="flex-1 space-y-2">
-                  <div className="h-2.5 w-2/3 rounded bg-paper-deep" />
-                  <div className="h-2 w-1/2 rounded bg-paper-deep" />
+                <div className="min-w-0 flex-1 space-y-2">
+                  <div className="h-2.5 w-2/3 rounded-full bg-slate-100" />
+                  <div className="h-2 w-1/2 rounded-full bg-slate-100" />
                 </div>
               </div>
             ))}
@@ -81,18 +101,26 @@ function ChatList({ items, loading, totalUnread, activeId, onGroupOpen }) {
 
         {/* Empty state */}
         {!loading && !items.length && (
-          <div className="flex flex-col items-center gap-2 px-6 py-14 text-center">
-            <span className="grid h-11 w-11 place-items-center rounded-full bg-paper-deep text-ink-soft">
+          <div className="flex h-full min-h-[300px] flex-col items-center justify-center px-6 py-14 text-center">
+            <span className="grid h-12 w-12 place-items-center rounded-2xl bg-slate-50 text-slate-400 ring-1 ring-slate-100">
               <MessageCircle className="h-5 w-5" />
             </span>
 
-            <p className="text-[13px] font-semibold text-ink">
+            <p className="mt-4 text-[13px] font-bold text-slate-700">
               No conversations yet
             </p>
 
-            <p className="text-[11.5px] leading-5 text-ink-soft">
+            <p className="mt-1.5 max-w-[220px] text-[11.5px] leading-5 text-slate-400">
               Add a friend or start a group to begin chatting.
             </p>
+
+            <Link
+              href="/chat/users"
+              className="mt-5 inline-flex items-center gap-1.5 rounded-xl bg-slate-950 px-3.5 py-2 text-[11px] font-bold text-white transition hover:bg-slate-800"
+            >
+              <UserPlus className="h-3.5 w-3.5" />
+              Find people
+            </Link>
           </div>
         )}
 
@@ -111,41 +139,61 @@ function ChatList({ items, loading, totalUnread, activeId, onGroupOpen }) {
               <Link
                 key={conversation.conversationId}
                 href={`/chat/conversation/${conversation.conversationId}`}
-                className={`relative flex items-center gap-3 border-b border-ink/6 px-4 py-3.5 transition ${
-                  active ? "bg-cobalt/[.06]" : "hover:bg-paper"
+                className={`group relative flex items-center gap-3 border-b border-slate-100 px-4 py-3.5 transition-all sm:px-5 ${
+                  active
+                    ? "bg-gradient-to-r from-emerald-50/80 to-cyan-50/40"
+                    : "hover:bg-slate-50/80"
                 }`}
               >
                 {/* Active indicator */}
                 {active && (
-                  <span className="absolute left-0 top-1/2 h-8 w-[3px] -translate-y-1/2 rounded-r-full bg-cobalt" />
+                  <span className="absolute left-0 top-1/2 h-8 w-[3px] -translate-y-1/2 rounded-r-full bg-gradient-to-b from-cyan-500 to-emerald-500" />
                 )}
 
                 {/* Avatar */}
-                <Avatar name={displayName} />
+                <div className="relative shrink-0">
+                  <Avatar name={displayName} />
+
+                  {active && (
+                    <span className="absolute -bottom-0.5 -right-0.5 h-2.5 w-2.5 rounded-full border-2 border-white bg-emerald-500" />
+                  )}
+                </div>
 
                 {/* Content */}
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center justify-between gap-2">
                     <span className="flex min-w-0 items-center gap-1.5">
-                      <b className="truncate text-[13px] font-bold text-ink">
+                      <b
+                        className={`truncate text-[13px] font-bold ${
+                          active ? "text-slate-950" : "text-slate-800"
+                        }`}
+                      >
                         {displayName}
                       </b>
 
                       {conversation.type === "group" && (
-                        <span className="shrink-0 font-mono text-[9.5px] text-ink-soft">
-                          ({conversation.memberCount})
+                        <span className="shrink-0 rounded-md bg-slate-100 px-1.5 py-0.5 font-mono text-[8.5px] font-medium text-slate-400">
+                          {conversation.memberCount}
                         </span>
                       )}
                     </span>
 
                     {conversation.unreadCount > 0 && (
-                      <span className="shrink-0 rounded-full bg-coral px-1.5 py-0.5 text-[10px] font-bold text-white">
-                        {conversation.unreadCount}
+                      <span className="grid min-w-[20px] shrink-0 place-items-center rounded-full bg-emerald-500 px-1.5 py-0.5 text-[9px] font-bold text-white shadow-sm">
+                        {conversation.unreadCount > 99
+                          ? "99+"
+                          : conversation.unreadCount}
                       </span>
                     )}
                   </div>
 
-                  <p className="truncate text-[11.5px] text-ink-soft">
+                  <p
+                    className={`mt-0.5 truncate text-[11.5px] leading-5 ${
+                      conversation.unreadCount > 0
+                        ? "font-medium text-slate-600"
+                        : "text-slate-400"
+                    }`}
+                  >
                     {conversation.lastMessage?.content || "No messages yet"}
                   </p>
                 </div>
