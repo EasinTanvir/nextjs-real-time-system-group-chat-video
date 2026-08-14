@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import toast from "react-hot-toast";
-import { Loader2, Send, UserPlus } from "lucide-react";
+import { Loader2, Phone, Send, UserPlus, Video } from "lucide-react";
 import api from "@/lib/api";
 import { useSocket } from "@/providers/SocketContext";
 import { useConversation } from "@/hooks/useConversations";
@@ -9,10 +9,11 @@ import { useConversationMessages } from "@/hooks/useConversationMessages";
 import ActiveMembersDropdown from "./ActiveMembersDropdown";
 import Avatar from "@/components/shared/Avatar";
 import AddMembersModal from "@/components/shared/AddMembersModal";
+import { useCall } from "@/providers/CallProvider";
 
 export default function ConversationDetails({ user, conversationId }) {
   const { socket, onlineUsers } = useSocket();
-
+  const { startCall } = useCall();
   const [conversation, setConversation] = useState(null);
   const [messages, setMessages] = useState([]);
   const [content, setContent] = useState("");
@@ -290,6 +291,37 @@ export default function ConversationDetails({ user, conversationId }) {
               }
               onlineUsers={onlineUsers}
             />
+          </div>
+        )}
+
+        {!isGroup && (
+          <div className="ml-auto flex gap-2">
+            <button
+              onClick={() =>
+                startCall({
+                  conversationId,
+                  calleeId: conversation.otherUser.id,
+                  calleeName: conversation.otherUser.username,
+                  type: "audio",
+                })
+              }
+              className="grid h-10 w-10 place-items-center rounded-xl text-slate-600 hover:bg-slate-100"
+            >
+              <Phone className="h-5 w-5" />
+            </button>
+            <button
+              onClick={() =>
+                startCall({
+                  conversationId,
+                  calleeId: conversation.otherUser.id,
+                  calleeName: conversation.otherUser.username,
+                  type: "video",
+                })
+              }
+              className="grid h-10 w-10 place-items-center rounded-xl text-slate-600 hover:bg-slate-100"
+            >
+              <Video className="h-5 w-5" />
+            </button>
           </div>
         )}
       </header>

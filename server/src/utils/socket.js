@@ -7,6 +7,7 @@ const { assertMember } = require("../services/message-service");
 const { updateLastSeen } = require("../services/user-service");
 const { getFriendIds } = require("../services/friend-service");
 const { setConnectedUsers } = require("../lib/socket-instance");
+const { registerCallHandlers } = require("../lib/videoCall/call-signaling");
 
 const joinLimiter = createRateLimiter({ max: 20, windowMs: 10_000 }); // 20 joins / 10s
 
@@ -60,6 +61,7 @@ function initSocket(server) {
 
   io.on("connection", async (socket) => {
     const userId = socket.userId;
+    registerCallHandlers(io, socket);
 
     // Personal room for this user
     socket.join(String(userId));
