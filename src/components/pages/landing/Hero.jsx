@@ -17,6 +17,7 @@ import {
 } from "lucide-react";
 
 import { image1, image2 } from "@/constant";
+import LiveActivity from "./LiveActivity";
 
 const fadeUp = {
   hidden: {
@@ -288,7 +289,7 @@ const DesktopProductVisual = () => {
           priority
         />
       </motion.div>
-
+      <LiveActivity />
       {/* Video */}
       <motion.div
         initial={{
