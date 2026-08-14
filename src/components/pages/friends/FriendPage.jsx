@@ -10,8 +10,9 @@ import api from "@/lib/api";
 import Avatar from "@/components/shared/Avatar";
 import { useSocket } from "@/providers/SocketContext";
 
-const Friend = ({ friendData, incoming = [] }) => {
+const Friend = ({ friendData, incoming: incomingProp = [] }) => {
   const [friends, setFriends] = useState([]);
+  const [incoming, setIncoming] = useState([]);
   const { socket } = useSocket();
   const router = useRouter();
 
@@ -20,11 +21,8 @@ const Friend = ({ friendData, incoming = [] }) => {
   const acceptRequest = async (requestId) => {
     try {
       setActionLoading(requestId);
-
       await api.post(`/friends/requests/${requestId}/accept`);
-
       toast.success("Friend request accepted");
-
       router.refresh();
     } catch (e) {
       toast.error(e.response?.data?.message || e.message);
@@ -36,37 +34,41 @@ const Friend = ({ friendData, incoming = [] }) => {
   const rejectRequest = async (requestId) => {
     try {
       setActionLoading(requestId);
-
       await api.post(`/friends/requests/${requestId}/reject`);
-
       toast.success("Friend request rejected");
-
-      router.refresh();
+      setIncoming((prev) => prev.filter((r) => r.id !== requestId)); // optimistic, instant
     } catch (e) {
       toast.error(e.response?.data?.message || e.message);
     } finally {
       setActionLoading(null);
     }
   };
-  console.log({ friendData });
+
   useEffect(() => {
     if (!friendData) return;
     setFriends(friendData);
   }, [friendData]);
 
   useEffect(() => {
+    setIncoming(incomingProp);
+  }, [incomingProp]);
+
+  useEffect(() => {
     if (!socket) return;
 
     const onRequestReceived = ({ request }) => {
-      setFriends((prev) => [request, ...prev]);
+      setIncoming((prev) =>
+        prev.some((r) => r.id === request.id) ? prev : [request, ...prev],
+      );
     };
 
     const onAccepted = () => {
-      router.refresh();
-    }; // friends list needs the full new entry (username etc.) — cheap, small list
+      router.refresh(); // friends list needs full server data (username, conversationId etc.)
+    };
 
     const onRejected = ({ requestId }) => {
-      setFriends((prev) => prev.filter((r) => r.id !== requestId));
+      // safety net in case this fires from the OTHER side of a reject (not the one who clicked)
+      setIncoming((prev) => prev.filter((r) => r.id !== requestId));
     };
 
     socket.on("friend:request-received", onRequestReceived);
@@ -78,7 +80,7 @@ const Friend = ({ friendData, incoming = [] }) => {
       socket.off("friend:accepted", onAccepted);
       socket.off("friend:request-rejected", onRejected);
     };
-  }, [socket]);
+  }, [socket, router]);
 
   return (
     <main className="mx-auto h-full max-w-5xl overflow-y-auto p-5 sm:p-8">

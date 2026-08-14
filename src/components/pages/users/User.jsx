@@ -128,7 +128,6 @@ const UsersPage = ({ usersData }) => {
     if (!socket) return;
 
     const onRequestReceived = ({ request }) => {
-      // someone sent ME a request — update their entry in the discover list
       setUsers((prev) =>
         prev.map((u) =>
           u.id === request.senderId
@@ -139,12 +138,11 @@ const UsersPage = ({ usersData }) => {
     };
 
     const onAccepted = ({ friend }) => {
-      // remove them from discover list entirely — they're a friend now
       setUsers((prev) => prev.filter((u) => u.id !== friend.id));
     };
 
-    const onRejected = () => load(); // simplest safe fallback — small list, cheap refetch
-    const onCancelled = () => load();
+    const onRejected = () => router.refresh(); // was `load()` — undefined in this file
+    const onCancelled = () => router.refresh(); // same
 
     socket.on("friend:request-received", onRequestReceived);
     socket.on("friend:accepted", onAccepted);
@@ -157,8 +155,7 @@ const UsersPage = ({ usersData }) => {
       socket.off("friend:request-rejected", onRejected);
       socket.off("friend:request-cancelled", onCancelled);
     };
-  }, [socket]);
-
+  }, [socket, router]);
   return (
     <main className="mx-auto h-full max-w-5xl overflow-y-auto p-5 sm:p-8">
       <p className="font-mono text-[10.5px] font-bold uppercase tracking-[.08em] text-cobalt">
