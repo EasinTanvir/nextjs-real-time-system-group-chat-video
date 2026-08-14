@@ -22,7 +22,7 @@ const FriendPage = async () => {
 
   return (
     <div className="h-full">
-      <Friend friends={friends} incoming={incoming} />
+      <Friend friendData={friends} incoming={incoming} />
     </div>
   );
 };

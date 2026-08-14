@@ -17,7 +17,7 @@ const UserPage = async () => {
 
   return (
     <div className="h-full">
-      <UsersPage users={users} />
+      <UsersPage usersData={users} />
     </div>
   );
 };

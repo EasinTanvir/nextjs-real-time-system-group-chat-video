@@ -1,7 +1,15 @@
 "use client";
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import toast from "react-hot-toast";
-import { Loader2, Menu, Phone, Send, UserPlus, Video } from "lucide-react";
+import {
+  ArrowLeft,
+  Loader2,
+  Menu,
+  Phone,
+  Send,
+  UserPlus,
+  Video,
+} from "lucide-react";
 import api from "@/lib/api";
 import { useSocket } from "@/providers/SocketContext";
 import { useConversation } from "@/hooks/useConversations";
@@ -11,6 +19,7 @@ import Avatar from "@/components/shared/Avatar";
 import AddMembersModal from "@/components/shared/AddMembersModal";
 import { useCall } from "@/providers/CallProvider";
 import { useChatList } from "@/components/pages/chatDetails/ChatDetailsLayout";
+import { useRouter } from "next/navigation";
 
 export default function ConversationDetails({ user, conversationId }) {
   const { socket, onlineUsers } = useSocket();
@@ -220,7 +229,7 @@ export default function ConversationDetails({ user, conversationId }) {
     socket.on("group:members-added", onMembersAdded);
     return () => socket.off("group:members-added", onMembersAdded);
   }, [socket, conversationId]);
-
+  const router = useRouter();
   if (loading) {
     return (
       <div className="flex flex-1 items-center justify-center bg-paper">
@@ -248,15 +257,16 @@ export default function ConversationDetails({ user, conversationId }) {
     !isGroup && onlineUsers.has(String(conversation.otherUser?.id));
 
   return (
-    <div className="flex h-full flex-col bg-paper">
+    <div className="flex flex-1 h-full flex-col ">
       <header className="flex items-center justify-between gap-3 border-b border-ink/8 bg-white p-4">
         <div className="flex items-center gap-3">
           <button
-            onClick={toggleList}
-            className="grid h-9 w-9 shrink-0 place-items-center rounded-xl text-ink-soft transition hover:bg-paper lg:hidden"
-            aria-label="Toggle chat list"
+            type="button"
+            onClick={() => router.push("/chat")}
+            className="grid h-9 w-9 shrink-0 place-items-center rounded-xl text-ink-soft transition hover:bg-paper hover:text-ink md:hidden"
+            aria-label="Back to conversations"
           >
-            <Menu className="h-5 w-5" />
+            <ArrowLeft className="h-5 w-5" />
           </button>
 
           <span className="relative">

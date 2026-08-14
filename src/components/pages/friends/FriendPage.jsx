@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
 import { MessageCircle, UsersRound, Check, X as XIcon } from "lucide-react";
 
@@ -48,7 +48,7 @@ const Friend = ({ friendData, incoming = [] }) => {
       setActionLoading(null);
     }
   };
-
+  console.log({ friendData });
   useEffect(() => {
     if (!friendData) return;
     setFriends(friendData);
