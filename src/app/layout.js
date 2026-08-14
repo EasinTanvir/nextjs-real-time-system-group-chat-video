@@ -3,7 +3,6 @@ import "./globals.css";
 import Navbar from "@/components/Navbar";
 import { getCookie } from "@/lib/cookies";
 import { SocketProvider } from "@/providers/SocketContext";
-import Footer from "@/components/pages/landing/Footer";
 import ReactQueryProvider from "@/providers/ReactQueryProvider";
 import { Toaster } from "react-hot-toast";
 
