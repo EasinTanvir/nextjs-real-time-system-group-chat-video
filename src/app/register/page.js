@@ -58,8 +58,8 @@ export default function RegisterPage() {
       await api.post("/auth/register", values);
 
       toast.success("Account created.");
-
-      router.replace("/chat");
+      router.refresh();
+      router.push("/chat");
     } catch (error) {
       console.log("register error", error);
 

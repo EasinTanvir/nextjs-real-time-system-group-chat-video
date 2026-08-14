@@ -14,6 +14,7 @@ export const SocketProvider = ({ children }) => {
   const [notifications, setNotifications] = useState([]);
   const [unread, setUnread] = useState(0);
   const [onlineUsers, setOnlineUsers] = useState(new Set());
+  const pathName = usePathname();
 
   const loadNotifications = async () => {
     try {
@@ -122,7 +123,7 @@ export const SocketProvider = ({ children }) => {
 
     setSocket(newSocket);
     return () => newSocket.disconnect();
-  }, []);
+  }, [pathName]);
 
   return (
     <SocketContext.Provider

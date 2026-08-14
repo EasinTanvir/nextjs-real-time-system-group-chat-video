@@ -40,9 +40,8 @@ export default function LoginPage() {
       });
 
       toast.success("Welcome back!");
-
-      router.push("/chat");
       router.refresh();
+      router.push("/chat");
     } catch (error) {
       console.log("login error", error.response.data.message);
 

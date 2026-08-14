@@ -2,7 +2,6 @@ import { Space_Grotesk, Manrope, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 import Navbar from "@/components/Navbar";
 import { getCookie } from "@/lib/cookies";
-import { SocketProvider } from "@/providers/SocketContext";
 import ReactQueryProvider from "@/providers/ReactQueryProvider";
 import { Toaster } from "react-hot-toast";
 
@@ -39,13 +38,11 @@ export default async function RootLayout({ children }) {
       className={`${spaceGrotesk.variable} ${manrope.variable} ${jetbrainsMono.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col bg-paper text-ink">
-        <SocketProvider>
-          <ReactQueryProvider>
-            <Navbar isAuthenticated={isAuthenticated} />
-            {children}
-          </ReactQueryProvider>
-          <Toaster position="top-center" />
-        </SocketProvider>
+        <ReactQueryProvider>
+          <Navbar isAuthenticated={isAuthenticated} />
+          {children}
+        </ReactQueryProvider>
+        <Toaster position="top-center" />
       </body>
     </html>
   );
