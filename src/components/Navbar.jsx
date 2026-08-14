@@ -1,162 +1,148 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import Link from "next/link";
-import { motion, AnimatePresence } from "framer-motion";
+import { ArrowRight, MessageCircle, Menu, X } from "lucide-react";
+import { useState } from "react";
 import { usePathname } from "next/navigation";
 
-const NAV_LINKS = [
-  { href: "#how-it-works", label: "How it works" },
-  { href: "#features", label: "Features" },
-];
-
-const PulsingDot = () => (
-  <span className="relative flex h-2.5 w-2.5">
-    <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-coral opacity-75" />
-    <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-coral" />
-  </span>
-);
-
-const Navbar = ({ isAuthenticated }) => {
-  const [scrolled, setScrolled] = useState(false);
-  const [open, setOpen] = useState(false);
+const Navbar = ({ isAuthenticated = false }) => {
   const pathName = usePathname();
+  const [open, setOpen] = useState(false);
 
-  useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 8);
-    onScroll();
-    window.addEventListener("scroll", onScroll);
-    return () => window.removeEventListener("scroll", onScroll);
-  }, []);
+  if (pathName.includes("/chat")) return null;
 
-  if (pathName.startsWith("/chat")) return;
   return (
-    <header
-      className={`sticky top-0 z-50 transition-colors duration-300 ${
-        scrolled
-          ? "border-b border-ink/10 bg-paper/85 backdrop-blur-md"
-          : "border-b border-transparent bg-transparent"
-      }`}
-    >
-      <nav className="mx-auto flex max-w-6xl items-center justify-between px-5 py-4 lg:px-8">
-        <Link href="/" className="flex items-center gap-2">
-          <PulsingDot />
-          <span className="font-display text-xl font-bold tracking-tight text-ink">
-            Chatify
-          </span>
-        </Link>
+    <header className="relative z-[100] bg-[#f8fafc]">
+      <nav className="mx-auto max-w-7xl px-5 pt-4 sm:pt-6 lg:px-8">
+        <div className="flex h-16 items-center justify-between rounded-2xl border border-slate-200/80 bg-white/85 px-4 shadow-[0_10px_35px_rgba(15,23,42,0.05)] backdrop-blur-xl sm:px-5">
+          <Link href="/" className="flex items-center gap-2.5">
+            <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-cyan-500 to-emerald-500 text-white shadow-sm">
+              <MessageCircle className="h-[18px] w-[18px]" />
+            </span>
 
-        <div className="hidden items-center gap-8 md:flex">
-          {NAV_LINKS.map((l) => (
+            <span className="font-display text-lg font-bold tracking-tight text-slate-950">
+              Chatify
+            </span>
+          </Link>
+
+          <div className="hidden items-center gap-8 lg:flex">
             <a
-              key={l.href}
-              href={l.href}
-              className="font-mono text-[13px] uppercase tracking-wide text-ink-soft transition-colors hover:text-ink"
+              href="#features"
+              className="text-sm font-semibold text-slate-500 transition hover:text-slate-950"
             >
-              {l.label}
+              Features
             </a>
-          ))}
-        </div>
 
-        <div className="hidden items-center gap-3 md:flex">
-          {isAuthenticated ? (
-            <Link
-              href="/chat"
-              className="rounded-lg border-2 border-ink bg-ink px-4 py-2 font-display text-sm font-semibold text-paper shadow-[3px_3px_0_0_var(--color-cobalt)] transition-transform hover:-translate-y-0.5"
+            <a
+              href="#calls"
+              className="text-sm font-semibold text-slate-500 transition hover:text-slate-950"
             >
-              Open inbox
-            </Link>
-          ) : (
-            <>
+              Calls
+            </a>
+
+            <a
+              href="#security"
+              className="text-sm font-semibold text-slate-500 transition hover:text-slate-950"
+            >
+              Security
+            </a>
+          </div>
+
+          <div className="hidden items-center gap-3 sm:flex">
+            {isAuthenticated ? (
               <Link
-                href="/login"
-                className="font-display text-sm font-semibold text-ink-soft hover:text-ink"
+                href="/chat"
+                className="inline-flex items-center gap-2 rounded-xl bg-slate-950 px-4 py-2.5 text-sm font-bold text-white transition hover:bg-slate-800"
               >
-                Log in
+                Open Chat
+                <ArrowRight className="h-4 w-4" />
               </Link>
-              <Link
-                href="/register"
-                className="rounded-lg border-2 border-ink bg-cobalt px-4 py-2 font-display text-sm font-semibold text-paper shadow-hard transition-all hover:-translate-y-0.5 hover:shadow-hard-lg"
-              >
-                Get started
-              </Link>
-            </>
-          )}
+            ) : (
+              <>
+                <Link
+                  href="/login"
+                  className="px-3 py-2 text-sm font-semibold text-slate-600 transition hover:text-slate-950"
+                >
+                  Log in
+                </Link>
+
+                <Link
+                  href="/register"
+                  className="rounded-xl bg-emerald-500 px-4 py-2.5 text-sm font-bold text-white shadow-sm transition hover:bg-emerald-400"
+                >
+                  Get started
+                </Link>
+              </>
+            )}
+          </div>
+
+          <button
+            type="button"
+            onClick={() => setOpen((value) => !value)}
+            className="flex h-10 w-10 items-center justify-center rounded-xl bg-slate-50 text-slate-700 sm:hidden"
+            aria-label="Toggle navigation"
+          >
+            {open ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+          </button>
         </div>
 
-        <button
-          onClick={() => setOpen((o) => !o)}
-          className="grid h-9 w-9 place-items-center rounded-md border-2 border-ink md:hidden"
-          aria-label="Toggle menu"
-        >
-          <div className="space-y-1">
-            <span
-              className={`block h-0.5 w-5 bg-ink transition-transform ${
-                open ? "translate-y-1.5 rotate-45" : ""
-              }`}
-            />
-            <span
-              className={`block h-0.5 w-5 bg-ink transition-opacity ${
-                open ? "opacity-0" : ""
-              }`}
-            />
-            <span
-              className={`block h-0.5 w-5 bg-ink transition-transform ${
-                open ? "-translate-y-1.5 -rotate-45" : ""
-              }`}
-            />
-          </div>
-        </button>
-      </nav>
-
-      <AnimatePresence>
         {open && (
-          <motion.div
-            initial={{ height: 0, opacity: 0 }}
-            animate={{ height: "auto", opacity: 1 }}
-            exit={{ height: 0, opacity: 0 }}
-            className="overflow-hidden border-t border-ink/10 bg-paper md:hidden"
-          >
-            <div className="flex flex-col gap-4 px-5 py-5">
-              {NAV_LINKS.map((l) => (
-                <a
-                  key={l.href}
-                  href={l.href}
-                  onClick={() => setOpen(false)}
-                  className="font-mono text-sm uppercase tracking-wide text-ink-soft"
+          <div className="mt-2 overflow-hidden rounded-2xl border border-slate-200 bg-white p-3 shadow-xl sm:hidden">
+            <div className="flex flex-col">
+              <a
+                href="#features"
+                onClick={() => setOpen(false)}
+                className="rounded-xl px-4 py-3 text-sm font-semibold text-slate-600 hover:bg-slate-50"
+              >
+                Features
+              </a>
+
+              <a
+                href="#calls"
+                onClick={() => setOpen(false)}
+                className="rounded-xl px-4 py-3 text-sm font-semibold text-slate-600 hover:bg-slate-50"
+              >
+                Calls
+              </a>
+
+              <a
+                href="#security"
+                onClick={() => setOpen(false)}
+                className="rounded-xl px-4 py-3 text-sm font-semibold text-slate-600 hover:bg-slate-50"
+              >
+                Security
+              </a>
+
+              <div className="my-2 h-px bg-slate-100" />
+
+              {isAuthenticated ? (
+                <Link
+                  href="/chat"
+                  className="rounded-xl bg-slate-950 px-4 py-3 text-center text-sm font-bold text-white"
                 >
-                  {l.label}
-                </a>
-              ))}
-              <div className="flex flex-col gap-2 pt-2">
-                {isAuthenticated ? (
+                  Open Chat
+                </Link>
+              ) : (
+                <>
                   <Link
-                    href="/chat"
-                    className="rounded-lg border-2 border-ink bg-ink px-4 py-2 text-center font-display text-sm font-semibold text-paper"
+                    href="/login"
+                    className="rounded-xl px-4 py-3 text-center text-sm font-semibold text-slate-600"
                   >
-                    Open inbox
+                    Log in
                   </Link>
-                ) : (
-                  <>
-                    <Link
-                      href="/login"
-                      className="rounded-lg border-2 border-ink px-4 py-2 text-center font-display text-sm font-semibold text-ink"
-                    >
-                      Log in
-                    </Link>
-                    <Link
-                      href="/register"
-                      className="rounded-lg border-2 border-ink bg-cobalt px-4 py-2 text-center font-display text-sm font-semibold text-paper"
-                    >
-                      Get started
-                    </Link>
-                  </>
-                )}
-              </div>
+
+                  <Link
+                    href="/register"
+                    className="rounded-xl bg-emerald-500 px-4 py-3 text-center text-sm font-bold text-white"
+                  >
+                    Get started
+                  </Link>
+                </>
+              )}
             </div>
-          </motion.div>
+          </div>
         )}
-      </AnimatePresence>
+      </nav>
     </header>
   );
 };

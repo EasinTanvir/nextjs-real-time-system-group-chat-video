@@ -1,16 +1,18 @@
 import Hero from "@/components/pages/landing/Hero";
-import HowItWorks from "@/components/pages/landing/HowItWorks";
 import Features from "@/components/pages/landing/Features";
-import Footer from "@/components/pages/landing/Footer";
+import CallExperience from "@/components/pages/landing/CallExperience";
+import Security from "@/components/pages/landing/Security";
+import FinalCTA from "@/components/pages/landing/FinalCTA";
 
 const HomePage = () => {
   return (
-    <>
+    <main className="overflow-hidden bg-[#f8fafc] text-slate-950">
       <Hero />
-      <HowItWorks />
       <Features />
-      <Footer />
-    </>
+      <CallExperience />
+      <Security />
+      <FinalCTA />
+    </main>
   );
 };
 
