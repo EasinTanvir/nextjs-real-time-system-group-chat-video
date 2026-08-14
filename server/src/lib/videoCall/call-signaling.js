@@ -9,6 +9,9 @@ const {
 } = require("./call-store");
 const { assertMember } = require("../../services/message-service");
 const { logCallMessage } = require("../../services/call-service");
+const { db } = require("../../db/client");
+const { eq } = require("drizzle-orm");
+const { users } = require("../../db/schema");
 
 const RING_TIMEOUT_MS = 30_000;
 const ringTimers = new Map(); // callId -> timeout handle
@@ -48,13 +51,19 @@ function registerCallHandlers(io, socket) {
         return socket.emit("call:busy", { calleeId });
       }
 
+      const caller = await db.query.users.findFirst({
+        where: eq(users.id, userId),
+        columns: { id: true, username: true, avatarUrl: true },
+      });
+
       const callId = randomUUID();
       createCall({ callId, callerId: userId, calleeId, conversationId, type });
-
+      console.log("user name", caller.username);
       io.to(String(calleeId)).emit("call:incoming", {
         callId,
         conversationId,
         callerId: userId,
+        callerName: caller?.username || "Unknown", // <-- added
         type,
       });
 

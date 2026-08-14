@@ -228,7 +228,13 @@ export function CallProvider({ children }) {
       setCall((prev) => (prev ? { ...prev, callId } : prev));
     };
 
-    const onIncoming = ({ callId, conversationId, callerId, type }) => {
+    const onIncoming = ({
+      callId,
+      conversationId,
+      callerId,
+      callerName,
+      type,
+    }) => {
       if (callRef.current) {
         // already in a call — auto-reject
         socket.emit("call:reject", { callId });
@@ -238,7 +244,7 @@ export function CallProvider({ children }) {
         callId,
         conversationId,
         peerId: callerId,
-        peerName: null,
+        peerName: callerName || null, // <-- was hardcoded null before
         type,
         status: "ringing-incoming",
       });
