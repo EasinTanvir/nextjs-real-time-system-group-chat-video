@@ -8,8 +8,11 @@ import { MessageCircle, UsersRound, Check, X as XIcon } from "lucide-react";
 
 import api from "@/lib/api";
 import Avatar from "@/components/shared/Avatar";
+import { useSocket } from "@/providers/SocketContext";
 
-const Friend = ({ friends = [], incoming = [] }) => {
+const Friend = ({ friendData, incoming = [] }) => {
+  const [friends, setFriends] = useState([]);
+  const { socket } = useSocket();
   const router = useRouter();
 
   const [actionLoading, setActionLoading] = useState(null);
@@ -45,6 +48,37 @@ const Friend = ({ friends = [], incoming = [] }) => {
       setActionLoading(null);
     }
   };
+
+  useEffect(() => {
+    if (!friendData) return;
+    setFriends(friendData);
+  }, [friendData]);
+
+  useEffect(() => {
+    if (!socket) return;
+
+    const onRequestReceived = ({ request }) => {
+      setFriends((prev) => [request, ...prev]);
+    };
+
+    const onAccepted = () => {
+      router.refresh();
+    }; // friends list needs the full new entry (username etc.) — cheap, small list
+
+    const onRejected = ({ requestId }) => {
+      setFriends((prev) => prev.filter((r) => r.id !== requestId));
+    };
+
+    socket.on("friend:request-received", onRequestReceived);
+    socket.on("friend:accepted", onAccepted);
+    socket.on("friend:request-rejected", onRejected);
+
+    return () => {
+      socket.off("friend:request-received", onRequestReceived);
+      socket.off("friend:accepted", onAccepted);
+      socket.off("friend:request-rejected", onRejected);
+    };
+  }, [socket]);
 
   return (
     <main className="mx-auto h-full max-w-5xl overflow-y-auto p-5 sm:p-8">

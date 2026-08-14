@@ -1,14 +1,20 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
 import { UserRoundPlus, Clock, Check } from "lucide-react";
 
 import api from "@/lib/api";
 import Avatar from "@/components/shared/Avatar";
+import { useSocket } from "@/providers/SocketContext";
 
-const UsersPage = ({ users = [] }) => {
+const UsersPage = ({ usersData }) => {
+  const [users, setUsers] = useState([]);
+
+  // inside component
+  const { socket } = useSocket();
+
   const router = useRouter();
 
   const [actionLoading, setActionLoading] = useState(null);
@@ -112,6 +118,46 @@ const UsersPage = ({ users = [] }) => {
 
     return null;
   };
+
+  useEffect(() => {
+    if (!usersData) return;
+    setUsers(usersData);
+  }, [usersData]);
+
+  useEffect(() => {
+    if (!socket) return;
+
+    const onRequestReceived = ({ request }) => {
+      // someone sent ME a request — update their entry in the discover list
+      setUsers((prev) =>
+        prev.map((u) =>
+          u.id === request.senderId
+            ? { ...u, friendStatus: "pending_received", requestId: request.id }
+            : u,
+        ),
+      );
+    };
+
+    const onAccepted = ({ friend }) => {
+      // remove them from discover list entirely — they're a friend now
+      setUsers((prev) => prev.filter((u) => u.id !== friend.id));
+    };
+
+    const onRejected = () => load(); // simplest safe fallback — small list, cheap refetch
+    const onCancelled = () => load();
+
+    socket.on("friend:request-received", onRequestReceived);
+    socket.on("friend:accepted", onAccepted);
+    socket.on("friend:request-rejected", onRejected);
+    socket.on("friend:request-cancelled", onCancelled);
+
+    return () => {
+      socket.off("friend:request-received", onRequestReceived);
+      socket.off("friend:accepted", onAccepted);
+      socket.off("friend:request-rejected", onRejected);
+      socket.off("friend:request-cancelled", onCancelled);
+    };
+  }, [socket]);
 
   return (
     <main className="mx-auto h-full max-w-5xl overflow-y-auto p-5 sm:p-8">

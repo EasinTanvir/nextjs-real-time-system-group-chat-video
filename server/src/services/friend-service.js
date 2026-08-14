@@ -77,6 +77,16 @@ async function sendFriendRequest(senderId, receiverId) {
       title: `${sender.username} sent you a friend request`,
       description: "You have a new friend request",
     });
+
+    try {
+      getIO()
+        .to(String(receiverId))
+        .emit("friend:request-received", { request });
+      getIO().to(String(senderId)).emit("friend:request-sent", { request });
+    } catch (err) {
+      console.error("Socket emit failed:", err.message);
+    }
+
     return request;
   } catch (err) {
     if (err.code === "23505")
@@ -120,6 +130,15 @@ async function respondToFriendRequest(requestId, userId, action) {
       title: `${responder.username} rejected your friend request`,
       description: "Your friend request was rejected",
     });
+
+    // in respondToFriendRequest, reject branch, after createNotification:
+    try {
+      getIO()
+        .to(String(request.senderId))
+        .emit("friend:request-rejected", { requestId: request.id });
+    } catch (err) {
+      console.error("Socket emit failed:", err.message);
+    }
     return { request: updated };
   }
 
@@ -164,6 +183,17 @@ async function respondToFriendRequest(requestId, userId, action) {
       io.to(String(request.senderId)).emit("friendship:created", {
         newFriendId: String(request.receiverId),
         isOnline: isReceiverOnline,
+      });
+
+      io.to(String(request.senderId)).emit("friend:accepted", {
+        requestId: request.id,
+        friend: { id: userId }, // receiver became sender's friend
+        conversationId: conversation.id,
+      });
+      io.to(String(userId)).emit("friend:accepted", {
+        requestId: request.id,
+        friend: { id: request.senderId },
+        conversationId: conversation.id,
       });
     } catch (err) {
       console.error("Failed to emit friendship:created:", err.message);
