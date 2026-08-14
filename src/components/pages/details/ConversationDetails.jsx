@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import toast from "react-hot-toast";
-import { Loader2, Phone, Send, UserPlus, Video } from "lucide-react";
+import { Loader2, Menu, Phone, Send, UserPlus, Video } from "lucide-react";
 import api from "@/lib/api";
 import { useSocket } from "@/providers/SocketContext";
 import { useConversation } from "@/hooks/useConversations";
@@ -10,10 +10,12 @@ import ActiveMembersDropdown from "./ActiveMembersDropdown";
 import Avatar from "@/components/shared/Avatar";
 import AddMembersModal from "@/components/shared/AddMembersModal";
 import { useCall } from "@/providers/CallProvider";
+import { useChatList } from "@/components/pages/chatDetails/ChatDetailsLayout";
 
 export default function ConversationDetails({ user, conversationId }) {
   const { socket, onlineUsers } = useSocket();
   const { startCall } = useCall();
+  const { toggleList } = useChatList();
   const [conversation, setConversation] = useState(null);
   const [messages, setMessages] = useState([]);
   const [content, setContent] = useState("");
@@ -25,14 +27,12 @@ export default function ConversationDetails({ user, conversationId }) {
   const currentUserId = String(user?.id);
   const isGroup = conversation?.type === "group";
 
-  // TanStack Query - Conversation
   const {
     data: conversationData,
     isLoading: conversationLoading,
     error: conversationError,
   } = useConversation(conversationId);
 
-  // TanStack Query - Messages
   const {
     data: messagesData,
     isLoading: messagesLoading,
@@ -46,21 +46,18 @@ export default function ConversationDetails({ user, conversationId }) {
       behavior: "smooth",
     });
 
-  // Sync conversation query data with existing state
   useEffect(() => {
     if (conversationData) {
       setConversation(conversationData);
     }
   }, [conversationData]);
 
-  // Sync messages query data with existing state
   useEffect(() => {
     if (messagesData) {
       setMessages(messagesData);
     }
   }, [messagesData]);
 
-  // Handle query errors
   useEffect(() => {
     const error = conversationError || messagesError;
 
@@ -73,8 +70,6 @@ export default function ConversationDetails({ user, conversationId }) {
     );
   }, [conversationError, messagesError]);
 
-  // Mark conversation as read
-  // POST request stays exactly as it was
   useEffect(() => {
     if (!conversationId || loading) return;
 
@@ -89,7 +84,6 @@ export default function ConversationDetails({ user, conversationId }) {
     markAsRead();
   }, [conversationId, loading]);
 
-  // Join conversation socket room
   useEffect(() => {
     if (!socket) return;
 
@@ -103,12 +97,10 @@ export default function ConversationDetails({ user, conversationId }) {
 
     return () => {
       socket.emit("conversation:leave", conversationId);
-
       socket.off("error", onError);
     };
   }, [socket, conversationId]);
 
-  // Receive new messages through socket
   useEffect(() => {
     if (!socket) return;
 
@@ -117,8 +109,6 @@ export default function ConversationDetails({ user, conversationId }) {
         return;
       }
 
-      // Don't add our own message again.
-      // The POST request already handles our message.
       if (String(message.senderId) === currentUserId) {
         return;
       }
@@ -135,12 +125,10 @@ export default function ConversationDetails({ user, conversationId }) {
     };
   }, [socket, conversationId, currentUserId]);
 
-  // Scroll to bottom
   useLayoutEffect(() => {
     scrollToBottom();
   }, [messages]);
-  // Send message
-  // POST request stays exactly as it was
+
   const send = async (e) => {
     e.preventDefault();
 
@@ -172,17 +160,13 @@ export default function ConversationDetails({ user, conversationId }) {
     try {
       const { data } = await api.post(
         `/conversations/${conversationId}/messages`,
-        {
-          content: text,
-        },
+        { content: text },
       );
 
       setMessages((prev) => prev.map((m) => (m.id === tempId ? data.data : m)));
     } catch (e) {
       toast.error(e.response?.data?.message || e.message);
-
       setMessages((prev) => prev.filter((m) => m.id !== tempId));
-
       setContent(text);
     } finally {
       setSending(false);
@@ -250,6 +234,14 @@ export default function ConversationDetails({ user, conversationId }) {
     <div className="flex h-full flex-col bg-paper">
       <header className="flex items-center justify-between gap-3 border-b border-ink/8 bg-white p-4">
         <div className="flex items-center gap-3">
+          <button
+            onClick={toggleList}
+            className="grid h-9 w-9 shrink-0 place-items-center rounded-xl text-ink-soft transition hover:bg-paper lg:hidden"
+            aria-label="Toggle chat list"
+          >
+            <Menu className="h-5 w-5" />
+          </button>
+
           <span className="relative">
             <Avatar name={headerName} size={40} />
             {!isGroup && isOtherUserOnline && (
