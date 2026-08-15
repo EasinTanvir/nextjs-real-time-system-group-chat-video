@@ -19,7 +19,7 @@ import {
 import { image1, image2 } from "@/constant";
 import LiveActivity from "./LiveActivity";
 import { useEffect } from "react";
-import api from "@/lib/api";
+import axios from "axios";
 
 const fadeUp = {
   hidden: {
@@ -349,7 +349,7 @@ const DesktopProductVisual = () => {
 
 export default function Hero() {
   const fetchData = async () => {
-    await api.get("/health");
+    await axios.get(process.env.NEXT_PUBLIC_SOCKET_URL + "/health");
   };
 
   useEffect(() => {
