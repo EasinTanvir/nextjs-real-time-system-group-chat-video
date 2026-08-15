@@ -165,14 +165,3 @@ cd server
 npx drizzle-kit generate
 npx drizzle-kit migrate
 ```
-
-## Roadmap / Known Limitations
-
-- No TURN server configured by default — required for reliable calling across restrictive networks in production
-- Group calling not yet implemented (current calling is 1:1 only; an SFU such as mediasoup would be the natural next step if group calls are needed at scale)
-- No message editing/deletion yet
-- No typing indicators yet (architecture supports adding this via the existing conversation-room broadcast pattern)
-
-## License
-
-MIT (or update to match your actual license)
