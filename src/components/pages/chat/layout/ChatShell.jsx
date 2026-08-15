@@ -48,11 +48,7 @@ const ChatShell = ({ children }) => {
     <div className="flex h-screen w-full overflow-hidden bg-[#f8fafc] text-slate-950">
       {/* Desktop sidebar */}
       <div className="hidden h-full shrink-0 lg:block">
-        <Sidebar
-          close={() => {
-            router.refresh();
-          }}
-        />
+        <Sidebar close={() => {}} />
       </div>
 
       {/* Mobile overlay */}
@@ -74,7 +70,6 @@ const ChatShell = ({ children }) => {
         <Sidebar
           close={() => {
             setMenuOpen(false);
-            router.refresh();
           }}
         />
       </div>
