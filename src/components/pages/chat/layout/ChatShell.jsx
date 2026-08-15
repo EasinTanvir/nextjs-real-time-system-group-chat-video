@@ -7,6 +7,7 @@ import Link from "next/link";
 
 import Sidebar from "./Sidebar";
 import Avatar from "./Avatar";
+import { useRouter } from "next/navigation";
 
 const ChatLogo = () => {
   return (
@@ -30,7 +31,7 @@ const ChatLogo = () => {
 const ChatShell = ({ children }) => {
   const [menuOpen, setMenuOpen] = useState(false);
   const [notificationsOpen, setNotificationsOpen] = useState(false);
-
+  const router = useRouter();
   const { notifications, unread, markAllRead } = useSocket();
 
   const openNotifications = async () => {
@@ -164,7 +165,10 @@ const ChatShell = ({ children }) => {
                           <Link
                             key={item.id}
                             href="/chat/friends"
-                            onClick={() => setNotificationsOpen(false)}
+                            onClick={() => {
+                              router.refresh();
+                              setNotificationsOpen(false);
+                            }}
                             className={`block rounded-xl px-3 py-3 transition hover:bg-slate-50 ${
                               item.readAt ? "" : "bg-emerald-50/60"
                             }`}
