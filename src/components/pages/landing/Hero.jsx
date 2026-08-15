@@ -18,6 +18,8 @@ import {
 
 import { image1, image2 } from "@/constant";
 import LiveActivity from "./LiveActivity";
+import { useEffect } from "react";
+import api from "@/lib/api";
 
 const fadeUp = {
   hidden: {
@@ -346,6 +348,14 @@ const DesktopProductVisual = () => {
 };
 
 export default function Hero() {
+  const fetchData = async () => {
+    await api.get("/health");
+  };
+
+  useEffect(() => {
+    fetchData();
+  }, []);
+
   return (
     <section className="relative overflow-hidden">
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_72%_28%,rgba(59,130,246,0.10),transparent_25%),radial-gradient(circle_at_20%_50%,rgba(16,185,129,0.07),transparent_28%)]" />
