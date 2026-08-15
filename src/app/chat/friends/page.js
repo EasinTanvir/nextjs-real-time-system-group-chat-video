@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic";
+
 import Friend from "@/components/pages/friends/FriendPage";
 import { apiServer } from "@/lib/api";
 import { getCookie } from "@/lib/cookies";
