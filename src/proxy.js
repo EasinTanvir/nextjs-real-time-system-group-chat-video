@@ -1,13 +1,12 @@
 import { NextResponse } from "next/server";
 
-const privatePath = ["/chat"];
-
 export async function proxy(request) {
-  // Read cookie directly from incoming request!
   const cookie = request.cookies.get("sid")?.value;
-  console.log({ cookie });
+  const pathname = request.nextUrl.pathname;
 
-  if (!cookie && privatePath.includes(request.nextUrl.pathname)) {
+  const isPrivatePath = pathname === "/chat" || pathname.startsWith("/chat/");
+
+  if (!cookie && isPrivatePath) {
     return NextResponse.redirect(new URL("/login", request.url));
   }
 

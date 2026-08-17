@@ -3,7 +3,7 @@ import { ArrowLeft, MessageCircle } from "lucide-react";
 
 export default function AuthPageShell({ title, description, children }) {
   return (
-    <main className="relative isolate flex min-h-[calc(100vh-80px)] items-center justify-center overflow-hidden bg-[#f8fafc] px-4 py-10 text-slate-950 sm:px-6">
+    <main className="relative isolate flex min-h-screen items-center justify-center overflow-hidden bg-[#f8fafc] px-4 py-10 text-slate-950 sm:px-6">
       {/* Ambient background */}
       <div className="pointer-events-none absolute inset-0 -z-10 overflow-hidden">
         <div className="absolute -left-32 -top-32 h-80 w-80 rounded-full bg-cyan-200/30 blur-3xl" />
