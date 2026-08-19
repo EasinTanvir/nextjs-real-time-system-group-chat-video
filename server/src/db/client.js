@@ -1,6 +1,7 @@
 const path = require("node:path");
 const dotenv = require("dotenv");
 const { Pool } = require("pg");
+
 const { drizzle } = require("drizzle-orm/node-postgres");
 const schema = require("./schema");
 
