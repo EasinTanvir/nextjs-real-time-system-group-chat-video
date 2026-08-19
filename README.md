@@ -22,7 +22,6 @@ my-app/
 │   ├── providers/         # SocketProvider, CallProvider (React context)
 │   └── lib/                # API client, helpers
 ├── public/
-└── prompts/         # (agent/prompt configs, if applicable)
 ```
 
 ## Features
