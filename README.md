@@ -2,6 +2,29 @@
 
 A real-time chat application with 1:1 and group messaging, live presence, friend requests, and WebRTC-powered audio/video calling — built on Next.js and a horizontally-scalable Express + Socket.IO backend.
 
+## Project Structure
+
+```
+my-app/
+├── server/          # Express + Socket.IO backend
+│   ├── src/
+│   │   ├── config/        # env, session, passport config
+│   │   ├── controllers/   # route handlers
+│   │   ├── services/      # business logic (friends, messages, groups, calls)
+│   │   ├── routes/        # Express route definitions
+│   │   ├── socket/        # Socket.IO connection handling, call signaling
+│   │   ├── db/             # Drizzle schema & client
+│   │   ├── lib/            # shared singletons (socket instance, call store)
+│   │   └── redis/          # BullMQ workers, pub/sub setup
+├── src/             # Next.js frontend (App Router)
+│   ├── app/               # routes: /chat, /chat/conversation/[id], /users, /friends
+│   ├── components/        # UI components (chat, calls, modals)
+│   ├── providers/         # SocketProvider, CallProvider (React context)
+│   └── lib/                # API client, helpers
+├── public/
+└── prompts/         # (agent/prompt configs, if applicable)
+```
+
 ## Features
 
 ### Messaging
@@ -92,29 +115,6 @@ Calls use plain WebRTC (peer-to-peer, mesh) rather than an SFU/media server. For
 - **Partial unique indexes** — e.g. only one _pending_ friend request allowed per sender/receiver pair, without blocking new requests after a prior one was resolved
 - **Circular FK handled correctly** — `conversations.lastMessageId` references `messages`, and `messages.conversationId` references `conversations`; insert order is: create conversation → insert message → update conversation's last-message pointer
 - **Cursor-friendly composite indexes** on `messages(conversationId, createdAt DESC, id DESC)` for efficient paginated history queries
-
-## Project Structure
-
-```
-my-app/
-├── server/          # Express + Socket.IO backend
-│   ├── src/
-│   │   ├── config/        # env, session, passport config
-│   │   ├── controllers/   # route handlers
-│   │   ├── services/      # business logic (friends, messages, groups, calls)
-│   │   ├── routes/        # Express route definitions
-│   │   ├── socket/        # Socket.IO connection handling, call signaling
-│   │   ├── db/             # Drizzle schema & client
-│   │   ├── lib/            # shared singletons (socket instance, call store)
-│   │   └── redis/          # BullMQ workers, pub/sub setup
-├── src/             # Next.js frontend (App Router)
-│   ├── app/               # routes: /chat, /chat/conversation/[id], /users, /friends
-│   ├── components/        # UI components (chat, calls, modals)
-│   ├── providers/         # SocketProvider, CallProvider (React context)
-│   └── lib/                # API client, helpers
-├── public/
-└── prompts/         # (agent/prompt configs, if applicable)
-```
 
 ## Getting Started
 
