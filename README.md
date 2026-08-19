@@ -6,7 +6,7 @@ A real-time chat application with 1:1 and group messaging, live presence, friend
 
 ```
 my-app/
-├── server/          # Express + Socket.IO backend
+├── server/          # Nodejs and Express.js + Socket.IO backend
 │   ├── src/
 │   │   ├── config/        # env, session, passport config
 │   │   ├── controllers/   # route handlers
